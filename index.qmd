@@ -10,13 +10,13 @@ theme: minty
 title-block-banner: images/solarfarm.jpg
 title-block-banner-color: white
 ---
-  
+
 # About This Project
-  
+
 As electricity demand grows across British Columbia, more renewable energy installations need to be developed to support a resilient, diversified, low-carbon future. In light of this challenge, a site suitability analysis was undergone to create a province-wide screening tool that determines the most optimal locations for solar PV development.
 
 This analysis is broken down into 2 main sections:
-  
+
 **Section 1** determines the geographical potential of BC - the total land area where solar farm development is possible.
 
 **Section 2** determines the technical potential of BC - the total energy these sites could produce on a yearly basis.
@@ -52,33 +52,37 @@ library(scales)
 library(dplyr)
 library(classInt)
 library(bcmaps)
+library(stringr)
 ```
 
-I recommend setting up an organized file system, similar to the one below, to save your intermediate outputs and final results
+I recommend setting up an organized file system, similar to the one below, to save your intermediate outputs and final results.
 
-/Solar_Suitability
-|- /raw_data 
-|- /criteria
-  |- /cleaned # for data layers that are reprojected, clipped, masked, resampled, and rasterized 
-  |- /reclassified # for data layers that are reclassified to a 1-5 suitability scale
-  |- /slope # to save the dem derived slope pieces 
-  |- /aspect # to save the dem derived aspect pieces 
-|- /constraints 
-  |- /binary # for data layers brought to a binary classification 
-  |- /mask # for the final constraints mask 
-|- /suitability_surfaces
-  |-/unmasked # suitability results without constraints mask 
-  |- /masked # suitability results with constraints mask
+```text
+Solar_Suitability/
+├── raw_data/
+├── criteria/
+│   ├── cleaned/         # Data layers reprojected, clipped, masked, resampled, and rasterized
+│   ├── reclassified/    # Data layers reclassified to a 1-5 suitability scale
+│   ├── slope/           # DEM-derived slope pieces
+│   └── aspect/          # DEM-derived aspect pieces
+├── constraints/
+│   ├── binary/          # Data layers brought to a binary classification
+│   └── mask/            # Final constraints mask
+└── suitability_surfaces/
+    ├── unmasked/        # Suitability results without constraints mask
+    └── masked/          # Suitability results with constraints mask
+```‎
 
-# Step 1: Data Pre-Processing
+# Stage 1: Geographical Potential
 
-## 1.1 Create Template
+## Step 1: Data Pre-Processing
 
-To first step of the analysis is the creation of a template raster. This layer will ensure that every input layer is the exact same extent and resolution. We will do create this by rasterizing a polygon representing BCs administrative boundary. 
+### 1.1 Create Template
+
+To first step of the analysis is the creation of a template raster. This layer will ensure that every input layer is the exact same extent and resolution. We will do create this by rasterizing a polygon representing BCs administrative boundary.
 
 ```{r}
 #| message: false
-#| output: false
 #| eval: false
 
 # Create template  
@@ -105,7 +109,7 @@ template <- rast("~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/t
 
 The next step of the analysis is data pre-processing. This section is divided in 2 parts - suitability criteria and land constraints.
 
-## 1.2 Suitability Criteria Processing
+### 1.2 Suitability Criteria Processing
 
 There are 6 suitability criteria layers used in this analysis:
 
@@ -123,12 +127,12 @@ There are 6 suitability criteria layers used in this analysis:
 
 Each layer needs to be clipped to BC's bounding box, masked to a template raster, projected to a common CRS (EPSG:3005 - BC Environmental Albers), sampled to a consistent spatial resolution, and reclassified to a 1-5 suitability scale. We will process each layer individually to ease computational power.
 
-### 1.2.1 Global Tilted Irradiance
+#### 1.2.1 Global Tilted Irradiance
 
-Data source: [Global Solar Atlas GIS Data](https://globalsolaratlas.info/download/canada) 
+Data source: [Global Solar Atlas GIS Data](https://globalsolaratlas.info/download/canada)
 
 Clean data:
-  
+
 ```{r}
 #| message: false 
 #| eval: false
@@ -151,7 +155,7 @@ writeRaster(gti_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA
 ```
 
 Reclassify to 1-5 suitability scale:
-  
+
 ```{r}
 #| message: false
 #| eval: false
@@ -187,17 +191,16 @@ writeRaster(gti_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC
 
 ```{r}
 #| echo: false
-#| title: Visualize Criteria 1 - GTI 
-#| 
+#| fig-cap: "Visualize Criteria 1 - GTI"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif"), col=suitability_cols)
 ```
 
-### 1.2.2 Ground Slope
+#### 1.2.2 Ground Slope
 
-Data source: [bcmaps R Package](https://cran.r-project.org/web/packages/bcmaps/index.html) 
+Data source: [bcmaps R Package](https://cran.r-project.org/web/packages/bcmaps/index.html)
 
-The ground slope raster is created by piecing together a DEM from the bcmaps package and then utilizing terrain functions to calculate slope. Initiate this for-loop to download the DEM, create the slope raster, and mask to our template raster. Expect this code chunk to take a few hours to finish. 
+The ground slope raster is created by piecing together a DEM from the bcmaps package and then utilizing terrain functions to calculate slope. Initiate this for-loop to download the DEM, create the slope raster, and mask to our template raster. Expect this code chunk to take a few hours to finish.
 
 ```{r}
 #| message: false
@@ -283,7 +286,7 @@ writeRaster(bc_slope_final, "/Users/kenziethomson/Library/CloudStorage/OneDrive-
 ```
 
 Reclassify to a 1-5 suitability scale:
-  
+
 ```{r}
 #| message: false
 #| eval: false
@@ -309,16 +312,16 @@ writeRaster(slope_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-U
 
 ```{r}
 #| echo: false
-#| title: Visualize Criteria 2 - Ground Slope
+#| fig-cap: "Visualize Criteria 2 - Ground Slope"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif"), col=suitability_cols)
 ```
 
-### 1.2.3 Ground Aspect 
+#### 1.2.3 Ground Aspect
 
-Data source: [bcmaps R Package](https://cran.r-project.org/web/packages/bcmaps/index.html) 
+Data source: [bcmaps R Package](https://cran.r-project.org/web/packages/bcmaps/index.html)
 
-We will apply the same for-loop methodology to create a BC wide aspect layer from a DEM. Again, expect this code chunk to take a few hours to finish. 
+We will apply the same for-loop methodology to create a BC wide aspect layer from a DEM. Again, expect this code chunk to take a few hours to finish.
 
 ```{r}
 #| message: false
@@ -437,16 +440,16 @@ writeRaster(aspect_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-
 
 ```{r}
 #| echo: false
-#| title: Visualize Criteria 3 - Ground Aspect
+#| fig-cap: "Visualize Criteria 3 - Ground Aspect"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif"), col=suitability_cols)
 ```
 
-### 1.2.4 Proximity to Substations
+#### 1.2.4 Proximity to Substations
 
-Data source: Private 
+Data source: Private
 
-Substation locations are point data, therefor, we must first create a euclidean distance raster where each cell represents a distance in meters away from the closest substation. 
+Substation locations are point data, therefor, we must first create a euclidean distance raster where each cell represents a distance in meters away from the closest substation.
 
 ```{r}
 #| message: false
@@ -469,7 +472,7 @@ writeRaster(subs_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/R
 ```
 
 Reclassify to a 1-5 suitability scale:
-  
+
 ```{r}
 #| message: false
 #| eval: false
@@ -495,14 +498,14 @@ writeRaster(subs_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UB
 
 ```{r}
 #| echo: false
-#| title: Visualize Criteria 4 - Proximity to Substations
+#| fig-cap: "Visualize Criteria 4 - Proximity to Substations"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif"), col=suitability_cols)
 ```
 
-### 1.2.5 Proximity to Demand Centers
+#### 1.2.5 Proximity to Demand Centers
 
-Data source: [BC Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/bc-major-cities-points-1-2-000-000-digital-baseline-mapping) 
+Data source: [BC Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/bc-major-cities-points-1-2-000-000-digital-baseline-mapping)
 
 Repeat process using point locations of major cities.
 
@@ -527,7 +530,7 @@ writeRaster(cities_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC
 ```
 
 Reclassify to a 1-5 suitability scale:
-  
+
 ```{r}
 #| message: false
 #| eval: false
@@ -553,12 +556,12 @@ writeRaster(cities_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-
 
 ```{r}
 #| echo: false
-#| title: Visualize Criteria 5 - Proximity to Demand Centers
+#| fig-cap: "Visualize Criteria 5 - Proximity to Demand Centers"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif"), col=suitability_cols)
 ```
 
-### 1.2.6 Proximity to Major Roads
+#### 1.2.6 Proximity to Major Roads
 
 Data source: [BC Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/7-5m-major-roads-the-atlas-of-canada-base-maps)
 
@@ -585,7 +588,7 @@ writeRaster(roads_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/
 ```
 
 Reclassify to a 1-5 suitability scale:
-  
+
 ```{r}
 #| message: false
 #| eval: false
@@ -611,41 +614,399 @@ writeRaster(roads_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-U
 
 ```{r}
 #| echo: false
-#| title: Visualize Criteria 6 - Proximity to Major Roads
+#| fig-cap: "Visualize Criteria 6 - Proximity to Major Roads"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif"), col=suitability_cols)
 ```
 
-## 1.3 Land Constraints Processing
+### 1.3 Land Constraints Processing
 
-This portion of the analysis creates the land constraints spatial mask used to eliminate land restricted from solar farm development due to technical, environmental, or regulatory factors. 
+This portion of the analysis creates the land constraints spatial mask used to eliminate land from the suitability analysis that is restricted from solar farm development due to technical, environmental, or regulatory factors.
 
 Land constraints include:
-  
-  1. Land covers - water, permanent snow and ice, wetlands, artificial and built environments 
 
-2. All roads - including forest service roads and names roads
+1.  Land covers - water, permanent snow and ice, wetlands, artificial and built environments
 
-3. Densely forested areas (canopy density > 40%)
+2.  Linear Features - All roads (including FSRs) and railways
 
-4. ALR land with a soil capability class of 1 and 2 (most arable land)
+3.  Densely forested areas (canopy density \> 40%)
 
-5. Protected and conserved areas
+4.  Agricultural Land Reserve with a Soil Capability Class 1-3 
 
-6. Archaeologically and culturally sensitive areas
+5.  Protected and conserved areas
 
-Each layer will be transformed to a binary with 0 representing land to be included in the constraints mask and 1 representing land that is not included in the constraints mask and is therefor available for inclusion in the suitability model. Each layers '0' cells will then be merged to create a master restriction zone layer. 
+6.  Archaeologically and culturally sensitive areas
 
-### 1.3.1 Land Cover
+Each layer will be individually transformed to a binary where:
 
+- 0 = land included in the constraints mask (not suitable)
+- 1 = land that is not included in the constraints mask (suitable) 
 
+Each layers cells classified as '0' will then be merged to create a master restriction zone layer.
+
+#### 1.3.1 Land Cover
+
+Data source: [Government Canada Census of Environment Land Cover Register](https://www150.statcan.gc.ca/n1/pub/16-510-x/16-510-x2025002-eng.htm)
+
+Clean data:
 
 ```{r}
+#| message: false
+#| eval: false
+
+# Load in land cover register layer
+lcr = rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/LCR_RCT_2020.tif")
+
+# Create a BC boundary layer in the projection of the lcr raster so that we can crop it. We cannot crop it using the template raster yet because the crs' are different and cannot alter the template without affecting the grid. 
+target_crs <- crs(lcr)
+bc_lcr_boundary <- sf::st_transform(bc, target_crs)
+
+# Crop lcr to bc bounding box
+lcr_crop <- crop(lcr, bc_lcr_boundary) 
+
+# Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template
+# Method = near - use nearest neighbor as method to preserve integer classification of original layer 
+lcr_proj <- project(lcr_crop, template, method = "near")
+
+# Mask to BC administrative boundary
+lcr_mask <- mask(lcr_proj, template) 
+
+# Save to cleaned constraints folder
+writeRaster(lcr_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/cleaned/lcr_cleaned.tif")
+```
+
+Reclassify to 1/0 binary using classification codes listed below:
+
+| Class Name                      | Class Code | Suitable? |
+|---------------------------------|------------|-----------|
+| Built up and artificial surface | 1          | No        |
+| Cropland                        | 2          | Yes       |
+| Inland water body               | 3          | No        |
+| Treed (non-wetland)             | 4          | Yes       |
+| Treed wetland                   | 5          | No        |
+| Treed area disturbance          | 6          | Yes       |
+| Grassland and shrubland         | 7          | Yes       |
+| Wetland (non-treed)             | 8          | No        |
+| Sparsely vegetated land         | 9          | Yes       |
+| Barren land                     | 10         | Yes       |
+| Permanent snow and ice          | 11         | No        |
+
+```{r}
+#| message: false
+#| eval: false
+
+# Create reclassification scheme 
+# 0 = not suitable - within constraints
+# 1 = suitable - not within constraints
+m <- c(1, 0, 
+       2, 1, 
+       3, 0, 
+       4, 1, 
+       5, 0, 
+       6, 1, 
+       7, 1,
+       8, 0, 
+       9, 1, 
+       10, 1, 
+       11, 0) 
+
+# Create matrix
+lcr_matrix <- matrix(m, ncol = 2, byrow = TRUE)
+
+# Apply classification
+lcr_binary <- terra::classify(lcr_mask, lcr_matrix)
+
+# Save to reclassified folder
+writeRaster(lcr_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif", overwrite = TRUE)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Constraint 1: Unsuitable Land Covers"
+cons_cols <- c("#696969", "#228B22")
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif"), col=cons_cols)
+```
+
+#### 1.3.2 Linear Features - Roads and Railways
+
+Data source: [BC Data Catalogue](https://catalogue.data.gov.bc.ca/dataset/digital-road-atlas-dra-master-partially-attributed-roads)
+
+Clean the data by selecting the correct layer from the geodatabase, rasterizing it into a binary structure, and masking it to our template.
+
+```{r}
+#| message: false
+#| eval: false
+
+# Roads
+
 # View available layers in BC Digital Road Atlas geodatabase
 st_layers("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb")
 
-# Load in vector layer
-roads <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb")
+# DGTL_ROAD_ATLAS_MPAR_SP = includes all the demographic roads in addition to the full dataset of non-demographic roads - roads without names.
+# DGTL_ROAD_ATLAS_DPAR_SP = includes only roads that have names. These are primarily highways and local roads, along with named resource roads.
+
+# Select road layer that contains ALL roads
+roads <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb", layer = "DGTL_ROAD_ATLAS_MPAR_SP") 
+
+# Convert sf object to spatvect
+roads_vect <- vect(roads)
+
+# Rasterize layer and spatially conform to our template
+# Set field to 0 (unsuitable) and background to 1 (suitable) so all non-road cells are assigned a value of 1
+roads_rast <- rasterize(roads_vect, template, field = 0, background = 1)
+
+# Mask to the template 
+roads_binary <- mask(roads_rast, template)
+
+# Save into the cleaned constraints folder
+writeRaster(roads_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif") 
 ```
 
+```{r}
+#| message: false
+#| eval: false
 
+# Railways
+
+# Read in railway sf object 
+rails <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Mask/Raw Data/railways.gpkg")
+
+# Convert sf object to spatvect
+rails_vect <- vect(rails)
+
+# Rasterize layer and spatially conform to our template
+# Set field to 0 (unsuitable) and background to 1 (suitable) so all non-road cells are assigned a value of 1
+rails_rast <- rasterize(rails_vect, template, field = 0, background = 1)
+
+# Mask to the template 
+rails_binary <- mask(rails_rast, template)
+
+# Save into the cleaned constraints folder
+writeRaster(rails_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/rails_binary.tif") 
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Constraint 2: Linear Features - Roads and Railways "
+
+cons_cols <- c("#696969", "#228B22")
+
+r_roads <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif")
+r_rails <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/rails_binary.tif")
+
+# Set base layout and tell terra plot not to reset par
+par(mfrow = c(1, 2))
+plot(r_roads, col = cons_cols, main = "Roads")
+plot(r_rails, col = cons_cols, main = "Railways")
+```
+
+#### 1.3.3 Dense Forests
+
+Because the land cover register defines treed areas as "land covered with trees with a canopy cover over 10%",  we want to further isolate and protect just those moderate-to-dense forests, which has a canopy cover of 40% (BC Ministry of Forests). 
+
+Data source: [National Terrestrial Ecosystem Monitoring System (NTEMS)](https://opendata.nfis.org/mapserver/nfis-change_eng.html) 
+
+Clean the data by isolating land with a canopy cover greater than 40% by creating a binary and then mask to our template.
+
+```{r}
+#| message: false
+#| eval: false
+
+# Read in NTEMS canopy cover raster 
+canopy <- rast("/Users/kenziethomson/Downloads/CA_canopy_cover_2022/CA_canopy_cover_2022.tif")
+
+#rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/CA_canopy_cover_2022.tif")
+
+# Create a BC boundary layer in the projection of the canopy raster so that we can crop it. We cannot crop it using the template raster yet because the crs' are different and cannot alter the template without affecting the grid. 
+target_crs <- crs(canopy)
+bc_canopy_boundary <- sf::st_transform(bc, target_crs)
+
+# Crop canopy cover raster to bc bounding box
+canopy_crop <- crop(canopy, bc_canopy_boundary) 
+
+# Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template
+# Method = bilinear - use for continuous data
+canopy_proj <- project(canopy_crop, template, method = "bilinear") 
+
+# Mask to BC administrative boundary
+canopy_mask <- mask(canopy_proj, template) 
+
+# Save to cleaned constraints folder
+writeRaster(canopy_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/cleaned/canopy_cleaned.tif")
+```
+
+Reclassify to 1/0 binary such that canopy cover > 40% is 0 (unsuitable) and canopy cover < 40% is 1 (suitable). 
+
+```{r}
+#| message: false
+#| eval: false
+
+# Create reclassification scheme 
+# 0 = not suitable - within constraints
+# 1 = suitable - not within constraints
+m <- c(0, 40, 1,
+       40, 100, 0)
+
+# Create matrix
+canopy_matrix <- matrix(m, ncol = 3, byrow = TRUE)
+
+# Apply classification
+canopy_binary <- terra::classify(canopy_mask, canopy_matrix)
+
+# Save to reclassified folder
+writeRaster(canopy_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif", overwrite = TRUE)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Constraint 3: Dense Forests"
+cons_cols <- c("#696969", "#228B22")
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif"), col=cons_cols)
+```
+
+#### 1.3.4 Agricultural Land Reserve / Soil Capability 
+
+Data source: [ALR GIS Data](https://www.alc.gov.bc.ca/alr-maps/) 
+
+Data source: 
+
+The ALR is a provincial land use zone that prioritizes and protects agricultural land. The *whole* ALR will not be included in the constraints - rather, only portions of the ALR with soil capability classes of 1 and 2 will be within the restriction zone. This will protect the most arable land from development, while also promoting the promising concept of agrovoltaics. 
+
+To clean the data isolate polygons with a soil capability class less than 3 then intercept soil capability data with the ALR layer. Rasterize remaining data into a binary and mask to our template.
+
+```{r}
+#| message: false
+#| eval: false
+
+soils <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Mask/Raw Data/50KAgCap.gdb")
+alr <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Mask/Raw Data/ALR_Polygons/ALR_Polygons.shp")
+
+# View fields
+# CC_Label = capability class
+head(soils)
+
+# Create function that selects polygons that are at least 50% class 1, 2, OR 3. Creates a new column called pct_123. 
+pct_class_123 <- function(label) {
+  if (is.na(label)) return(NA_real_)
+  
+  m <- str_match_all(label, "(?:(\\d+):)?(\\d)[A-Za-z]*")[[1]]
+  
+  pct   <- ifelse(is.na(m[,2]), 100, as.numeric(m[,2]) * 10)
+  class <- as.numeric(m[,3])
+  
+  sum(pct[class %in% c(1, 2, 3)])
+}
+
+# Apply function to soils sf object
+prime_soils <- soils %>%
+  mutate(pct_123 = sapply(CC_Label, pct_class_123)) %>%
+  filter(!is.na(pct_123) & pct_123 >= 50) 
+
+# Intersect prime soils layer with the ALR polygons to create a new layer showing where the ALR and the prime soils polygons overlap. 
+alr_soils_int <- sf::st_intersection(alr, prime_soils)
+
+# Convert to spatvect
+alr_soils_vect <- vect(alr_soils_int)
+
+# Rasterize layer and spatially conform to our template
+# Set field to 0 (unsuitable) and background to 1 (suitable) so all non-road cells are assigned a value of 1
+alr_soils_rast <- rasterize(alr_soils_vect, template, field = 0, background = 1)
+
+# Mask to the template 
+alr_soils_binary <- mask(alr_soils_rast, template)
+
+# Save to reclassified folder
+writeRaster(alr_soils_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif", overwrite = TRUE)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Constraint 4: Prime Agricultural Land"
+cons_cols <- c("#696969", "#228B22")
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif"), col=cons_cols)
+```
+
+#### 1.3.5 Protected and Conserved Areas
+
+Data source: [Canadian Protected and Conserved Areas Database](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html) 
+
+Clean and rasterize data as usual, with the additional step of adding a 1km ecological buffer around Protected and Conserved Areas (PCA) polygons before rasterizing. 
+
+```{r}
+#| message: false
+#| eval: false
+
+pca <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Mask/Raw Data/ProtectedConservedArea_2024.gdb", layer = "ProtectedConservedArea_2024")
+
+# Create a BC boundary layer in the projection of the PCA raster so that we can crop it. We cannot crop it using the template raster yet because the crs' are different and cannot alter the template without affecting the grid. 
+target_crs <- crs(pca)
+bc_pca_boundary <- sf::st_transform(bc, target_crs)
+
+# Clip PCA to BC bounding box
+pca_clip <- sf::st_intersection(pca, bc_pca_boundary) 
+
+# Buffer 1000m
+pca_buff <- sf::st_buffer(pca_clip, 1000)
+
+# Make spatvect 
+pca_buff_vect <- vect(pca_buff)
+
+# Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template
+pca_proj <- project(pca_buff_vect, template)
+
+# Rasterize into a binary, ensuring it spatially conforms to template
+pca_rast <- rasterize(pca_proj, template, field = 0, background = 1)
+
+# Mask to the template 
+pca_binary <- mask(pca_rast, template)
+
+# Save to cleaned constraints folder
+writeRaster(pca_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Constraint 5: Protected and Conserved Areas"
+cons_cols <- c("#696969", "#228B22")
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif"), col=cons_cols)
+```
+
+#### 1.3.6 Archaeologically and Culturally Sensitive Areas
+
+WAITING ON DATA
+
+### 1.4 Land Constraints Mask 
+
+Now that all data representing restriction zones are in binary raster format, we will easily combine them together into one master constraint mask to use on our final suitability surface. 
+
+Logic: If all cells across all layers equals 0, cell in final mask will equal 0. If even one cell across all layers equal 1, cell in final mask will equal 1. 
+
+We can use simple multiplication to accomplish this.
+
+```{r}
+#| message: false
+#| eval: false
+
+constraints <- (pca_binary *
+                alr_soils_binary *
+                canopy_binary *
+                roads_binary *
+                rails_binary *
+                lcr_binary)
+
+# Save
+writeRaster(constraints, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Land Constraints Mask"
+cons_cols <- c("#696969", "#228B22")
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif"), col=cons_cols)
+```
+
+## Step 2: Analytic Hierarchy Process
+
+## Step 3: Weighted Sum Overlay
+
+# Stage 2: Technical Potential
