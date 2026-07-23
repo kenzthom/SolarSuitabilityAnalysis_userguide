@@ -134,8 +134,10 @@ background-size: cover;
   <ul>
   <li><a href="#about-this-project" id="toc-about-this-project" class="nav-link active" data-scroll-target="#about-this-project">About This Project</a></li>
   <li><a href="#set-up" id="toc-set-up" class="nav-link" data-scroll-target="#set-up">Set-Up</a></li>
-  <li><a href="#step-1-data-pre-processing" id="toc-step-1-data-pre-processing" class="nav-link" data-scroll-target="#step-1-data-pre-processing">Step 1: Data Pre-Processing</a>
+  <li><a href="#stage-1-geographical-potential" id="toc-stage-1-geographical-potential" class="nav-link" data-scroll-target="#stage-1-geographical-potential">Stage 1: Geographical Potential</a>
   <ul>
+  <li><a href="#step-1-data-pre-processing" id="toc-step-1-data-pre-processing" class="nav-link" data-scroll-target="#step-1-data-pre-processing">Step 1: Data Pre-Processing</a>
+  <ul class="collapse">
   <li><a href="#create-template" id="toc-create-template" class="nav-link" data-scroll-target="#create-template">1.1 Create Template</a></li>
   <li><a href="#suitability-criteria-processing" id="toc-suitability-criteria-processing" class="nav-link" data-scroll-target="#suitability-criteria-processing">1.2 Suitability Criteria Processing</a>
   <ul class="collapse">
@@ -149,8 +151,19 @@ background-size: cover;
   <li><a href="#land-constraints-processing" id="toc-land-constraints-processing" class="nav-link" data-scroll-target="#land-constraints-processing">1.3 Land Constraints Processing</a>
   <ul class="collapse">
   <li><a href="#land-cover" id="toc-land-cover" class="nav-link" data-scroll-target="#land-cover">1.3.1 Land Cover</a></li>
+  <li><a href="#linear-features---roads-and-railways" id="toc-linear-features---roads-and-railways" class="nav-link" data-scroll-target="#linear-features---roads-and-railways">1.3.2 Linear Features - Roads and Railways</a></li>
+  <li><a href="#dense-forests" id="toc-dense-forests" class="nav-link" data-scroll-target="#dense-forests">1.3.3 Dense Forests</a></li>
+  <li><a href="#agricultural-land-reserve-soil-capability" id="toc-agricultural-land-reserve-soil-capability" class="nav-link" data-scroll-target="#agricultural-land-reserve-soil-capability">1.3.4 Agricultural Land Reserve / Soil Capability</a></li>
+  <li><a href="#protected-and-conserved-areas" id="toc-protected-and-conserved-areas" class="nav-link" data-scroll-target="#protected-and-conserved-areas">1.3.5 Protected and Conserved Areas</a></li>
+  <li><a href="#archaeologically-and-culturally-sensitive-areas" id="toc-archaeologically-and-culturally-sensitive-areas" class="nav-link" data-scroll-target="#archaeologically-and-culturally-sensitive-areas">1.3.6 Archaeologically and Culturally Sensitive Areas</a></li>
   </ul></li>
+  <li><a href="#land-constraints-mask" id="toc-land-constraints-mask" class="nav-link" data-scroll-target="#land-constraints-mask">1.4 Land Constraints Mask</a></li>
   </ul></li>
+  <li><a href="#step-2-analytic-hierarchy-process" id="toc-step-2-analytic-hierarchy-process" class="nav-link" data-scroll-target="#step-2-analytic-hierarchy-process">Step 2: Analytic Hierarchy Process</a></li>
+  <li><a href="#step-3-weighted-sum-overlay" id="toc-step-3-weighted-sum-overlay" class="nav-link" data-scroll-target="#step-3-weighted-sum-overlay">Step 3: Weighted Sum Overlay</a></li>
+  <li><a href="#step-4-quantify-geographical-potential-results" id="toc-step-4-quantify-geographical-potential-results" class="nav-link" data-scroll-target="#step-4-quantify-geographical-potential-results">Step 4: Quantify Geographical Potential Results</a></li>
+  </ul></li>
+  <li><a href="#stage-2-technical-potential" id="toc-stage-2-technical-potential" class="nav-link" data-scroll-target="#stage-2-technical-potential">Stage 2: Technical Potential</a></li>
   </ul>
 </nav>
 </div>
@@ -166,8 +179,8 @@ background-size: cover;
 <h1>About This Project</h1>
 <p>As electricity demand grows across British Columbia, more renewable energy installations need to be developed to support a resilient, diversified, low-carbon future. In light of this challenge, a site suitability analysis was undergone to create a province-wide screening tool that determines the most optimal locations for solar PV development.</p>
 <p>This analysis is broken down into 2 main sections:</p>
-<p><strong>Section 1</strong> determines the geographical potential of BC - the total land area where solar farm development is possible.</p>
-<p><strong>Section 2</strong> determines the technical potential of BC - the total energy these sites could produce on a yearly basis.</p>
+<p><strong>Stage 1</strong> determines the geographical potential of BC - the total land area where solar farm development is possible.</p>
+<p><strong>Stage 2</strong> determines the technical potential of BC - the total energy these sites could produce on a yearly basis.</p>
 <p>By providing clear and accessible information on renewable energy potential, this project helps accelerate clean energy development, informs decision-making and supports BC’s transformation to a more resilient and sustainable electricity system.</p>
 <p>This document provides a detailed guide of the analysis, including all code used to derive results.</p>
 <p><a href="https://www.uvic.ca/acet/projects/bc-renewable-energy-mapping/index.php">Click for more info</a></p>
@@ -189,42 +202,60 @@ background-size: cover;
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales) </span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(classInt)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bcmaps)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bcmaps)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>I recommend setting up an organized file system, similar to the one below, to save your intermediate outputs and final results</p>
-<p>/Solar_Suitability |- /raw_data |- /criteria |- /cleaned # for data layers that are reprojected, clipped, masked, resampled, and rasterized |- /reclassified # for data layers that are reclassified to a 1-5 suitability scale |- /slope # to save the dem derived slope pieces |- /aspect # to save the dem derived aspect pieces |- /constraints |- /binary # for data layers brought to a binary classification |- /mask # for the final constraints mask |- /suitability_surfaces |-/unmasked # suitability results without constraints mask |- /masked # suitability results with constraints mask</p>
+<p>I recommend setting up an organized file system, similar to the one below, to save your intermediate outputs and final results.</p>
+<div class="cell">
+<pre class="text cell-code"><code>Solar_Suitability/
+├── raw_data/
+├── criteria/
+│   ├── cleaned/         # Data layers reprojected, clipped, masked, resampled, and rasterized
+│   ├── reclassified/    # Data layers reclassified to a 1-5 suitability scale
+│   ├── slope/           # DEM-derived slope pieces
+│   └── aspect/          # DEM-derived aspect pieces
+├── constraints/
+│   ├── binary/          # Data layers brought to a binary classification
+│   └── mask/            # Final constraints mask
+└── suitability_surfaces/
+    ├── unmasked/        # Suitability results without constraints mask
+    └── masked/          # Suitability results with constraints mask</code></pre>
+</div>
 </section>
-<section id="step-1-data-pre-processing" class="level1">
-<h1>Step 1: Data Pre-Processing</h1>
-<section id="create-template" class="level2">
-<h2 class="anchored" data-anchor-id="create-template">1.1 Create Template</h2>
+<section id="stage-1-geographical-potential" class="level1">
+<h1>Stage 1: Geographical Potential</h1>
+<section id="step-1-data-pre-processing" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-data-pre-processing">Step 1: Data Pre-Processing</h2>
+<section id="create-template" class="level3">
+<h3 class="anchored" data-anchor-id="create-template">1.1 Create Template</h3>
 <p>To first step of the analysis is the creation of a template raster. This layer will ensure that every input layer is the exact same extent and resolution. We will do create this by rasterizing a polygon representing BCs administrative boundary.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create template  </span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in layer</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>bc <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/BC_RegionalDistricts.shp"</span>) </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Project to BC Enviro Albers (EPSG:3005)</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>bc <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_transform</span>(bc, <span class="at">crs =</span> <span class="dv">3005</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create template spanning vector extent</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Set 30 m spatial resolution (each cell = 30m x 30m) </span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>template <span class="ot">&lt;-</span> <span class="fu">rast</span>(bc, <span class="at">res =</span> <span class="dv">30</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to raster and burning in the Regional District Name attribute column </span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>template <span class="ot">&lt;-</span> <span class="fu">rasterize</span>(bc, template, <span class="at">field =</span> <span class="st">"NAME_2"</span>)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the output</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(template, <span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/template/template.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Quick read</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>template <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/template/template.tif"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create template  </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in layer</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>bc <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/BC_RegionalDistricts.shp"</span>) </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Project to BC Enviro Albers (EPSG:3005)</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>bc <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_transform</span>(bc, <span class="at">crs =</span> <span class="dv">3005</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Create template spanning vector extent</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Set 30 m spatial resolution (each cell = 30m x 30m) </span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>template <span class="ot">&lt;-</span> <span class="fu">rast</span>(bc, <span class="at">res =</span> <span class="dv">30</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to raster and burning in the Regional District Name attribute column </span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>template <span class="ot">&lt;-</span> <span class="fu">rasterize</span>(bc, template, <span class="at">field =</span> <span class="st">"NAME_2"</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the output</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(template, <span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/template/template.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Quick read</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>template <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/template/template.tif"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The next step of the analysis is data pre-processing. This section is divided in 2 parts - suitability criteria and land constraints.</p>
 </section>
-<section id="suitability-criteria-processing" class="level2">
-<h2 class="anchored" data-anchor-id="suitability-criteria-processing">1.2 Suitability Criteria Processing</h2>
+<section id="suitability-criteria-processing" class="level3">
+<h3 class="anchored" data-anchor-id="suitability-criteria-processing">1.2 Suitability Criteria Processing</h3>
 <p>There are 6 suitability criteria layers used in this analysis:</p>
 <ol type="1">
 <li><p>Global Tilted Irradiance (GTI)</p></li>
@@ -235,71 +266,70 @@ background-size: cover;
 <li><p>Proximity to Major Roads</p></li>
 </ol>
 <p>Each layer needs to be clipped to BC’s bounding box, masked to a template raster, projected to a common CRS (EPSG:3005 - BC Environmental Albers), sampled to a consistent spatial resolution, and reclassified to a 1-5 suitability scale. We will process each layer individually to ease computational power.</p>
-<section id="global-tilted-irradiance" class="level3">
-<h3 class="anchored" data-anchor-id="global-tilted-irradiance">1.2.1 Global Tilted Irradiance</h3>
+<section id="global-tilted-irradiance" class="level4">
+<h4 class="anchored" data-anchor-id="global-tilted-irradiance">1.2.1 Global Tilted Irradiance</h4>
 <p>Data source: <a href="https://globalsolaratlas.info/download/canada">Global Solar Atlas GIS Data</a></p>
 <p>Clean data:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in GTI raster layer </span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>GTI <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Existing Renewables Mapping Project/Raw solar and wind/Canada_GISdata_LTAy_YearlyMonthlyTotals_GlobalSolarAtlas-v2_GEOTIFF/GTI.tif"</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Project to template raster projection (EPSG:3005)</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Resampling method = bilinear interpolation (used for continuous data)</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>gti_proj <span class="ot">&lt;-</span> <span class="fu">project</span>(GTI, template, <span class="at">method =</span> <span class="st">"bilinear"</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Clip to BC bounding box</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>gti_crop <span class="ot">&lt;-</span> <span class="fu">crop</span>(gti_proj, template)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask to BC administrative boundary</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>gti_mask <span class="ot">&lt;-</span> <span class="fu">mask</span>(gti_crop, template) </span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in cleaned data folder</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(gti_mask, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/cleaned/gti_cleaned.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in GTI raster layer </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>GTI <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Existing Renewables Mapping Project/Raw solar and wind/Canada_GISdata_LTAy_YearlyMonthlyTotals_GlobalSolarAtlas-v2_GEOTIFF/GTI.tif"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Project to template raster projection (EPSG:3005)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Resampling method = bilinear interpolation (used for continuous data)</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>gti_proj <span class="ot">&lt;-</span> <span class="fu">project</span>(GTI, template, <span class="at">method =</span> <span class="st">"bilinear"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Clip to BC bounding box</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>gti_crop <span class="ot">&lt;-</span> <span class="fu">crop</span>(gti_proj, template)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask to BC administrative boundary</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>gti_mask <span class="ot">&lt;-</span> <span class="fu">mask</span>(gti_crop, template) </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in cleaned data folder</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(gti_mask, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/cleaned/gti_cleaned.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Reclassify to 1-5 suitability scale:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reclassify using natural breaks (jenks) </span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Get data bounds</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>true_min <span class="ot">&lt;-</span> <span class="fu">global</span>(gti_mask, <span class="st">"min"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>, <span class="dv">1</span>]</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>true_max <span class="ot">&lt;-</span> <span class="fu">global</span>(gti_mask, <span class="st">"max"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>, <span class="dv">1</span>]</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>vals <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">spatSample</span>(gti_mask, <span class="dv">500000</span>, <span class="at">method =</span> <span class="st">"regular"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>jenks_obj <span class="ot">&lt;-</span> <span class="fu">classIntervals</span>(<span class="fu">as.numeric</span>(vals[[<span class="dv">1</span>]]), <span class="at">n =</span> <span class="dv">5</span>, <span class="at">style =</span> <span class="st">"fisher"</span>) </span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>breaks <span class="ot">&lt;-</span> jenks_obj<span class="sc">$</span>brks</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Set data bounds </span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>breaks[<span class="dv">1</span>] <span class="ot">&lt;-</span> true_min</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>breaks[<span class="fu">length</span>(breaks)] <span class="ot">&lt;-</span> true_max </span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Create classification matrix</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>m_jenks <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(breaks, <span class="sc">-</span><span class="dv">1</span>),</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tail</span>(breaks, <span class="sc">-</span><span class="dv">1</span>),</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Execute classification </span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>gti_reclass <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">classify</span>(gti_mask, m_jenks, <span class="at">include.lowest =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in reclassified data folder</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(gti_reclass, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reclassify using natural breaks (jenks) </span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Get data bounds</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>true_min <span class="ot">&lt;-</span> <span class="fu">global</span>(gti_mask, <span class="st">"min"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>, <span class="dv">1</span>]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>true_max <span class="ot">&lt;-</span> <span class="fu">global</span>(gti_mask, <span class="st">"max"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>, <span class="dv">1</span>]</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>vals <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">spatSample</span>(gti_mask, <span class="dv">500000</span>, <span class="at">method =</span> <span class="st">"regular"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>jenks_obj <span class="ot">&lt;-</span> <span class="fu">classIntervals</span>(<span class="fu">as.numeric</span>(vals[[<span class="dv">1</span>]]), <span class="at">n =</span> <span class="dv">5</span>, <span class="at">style =</span> <span class="st">"fisher"</span>) </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>breaks <span class="ot">&lt;-</span> jenks_obj<span class="sc">$</span>brks</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Set data bounds </span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>breaks[<span class="dv">1</span>] <span class="ot">&lt;-</span> true_min</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>breaks[<span class="fu">length</span>(breaks)] <span class="ot">&lt;-</span> true_max </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Create classification matrix</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>m_jenks <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(breaks, <span class="sc">-</span><span class="dv">1</span>),</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tail</span>(breaks, <span class="sc">-</span><span class="dv">1</span>),</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>), <span class="at">ncol =</span> <span class="dv">3</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Execute classification </span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>gti_reclass <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">classify</span>(gti_mask, m_jenks, <span class="at">include.lowest =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in reclassified data folder</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(gti_reclass, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" title="Visualize Criteria 1 - GTI">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>suitability_cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#FFFFCC"</span>, <span class="st">"#FECC5C"</span>,<span class="st">"#FD8D3C"</span>,<span class="st">"#F03B20"</span>,<span class="st">"#BD0026"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif"</span>), <span class="at">col=</span>suitability_cols)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell">
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Visualize Criteria 1 - GTI</figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="ground-slope" class="level3">
-<h3 class="anchored" data-anchor-id="ground-slope">1.2.2 Ground Slope</h3>
+<section id="ground-slope" class="level4">
+<h4 class="anchored" data-anchor-id="ground-slope">1.2.2 Ground Slope</h4>
 <p>Data source: <a href="https://cran.r-project.org/web/packages/bcmaps/index.html">bcmaps R Package</a></p>
 <p>The ground slope raster is created by piecing together a DEM from the bcmaps package and then utilizing terrain functions to calculate slope. Initiate this for-loop to download the DEM, create the slope raster, and mask to our template raster. Expect this code chunk to take a few hours to finish.</p>
 <div class="cell">
@@ -401,18 +431,19 @@ background-size: cover;
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in reclassified data folder</span></span>
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(slope_reclass, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" title="Visualize Criteria 2 - Ground Slope">
+<div class="cell">
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Visualize Criteria 2 - Ground Slope</figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="ground-aspect" class="level3">
-<h3 class="anchored" data-anchor-id="ground-aspect">1.2.3 Ground Aspect</h3>
+<section id="ground-aspect" class="level4">
+<h4 class="anchored" data-anchor-id="ground-aspect">1.2.3 Ground Aspect</h4>
 <p>Data source: <a href="https://cran.r-project.org/web/packages/bcmaps/index.html">bcmaps R Package</a></p>
 <p>We will apply the same for-loop methodology to create a BC wide aspect layer from a DEM. Again, expect this code chunk to take a few hours to finish.</p>
 <div class="cell">
@@ -521,18 +552,19 @@ background-size: cover;
 <span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in reclassified data folder</span></span>
 <span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(aspect_reclass, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" title="Visualize Criteria 3 - Ground Aspect">
+<div class="cell">
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Visualize Criteria 3 - Ground Aspect</figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="proximity-to-substations" class="level3">
-<h3 class="anchored" data-anchor-id="proximity-to-substations">1.2.4 Proximity to Substations</h3>
+<section id="proximity-to-substations" class="level4">
+<h4 class="anchored" data-anchor-id="proximity-to-substations">1.2.4 Proximity to Substations</h4>
 <p>Data source: Private</p>
 <p>Substation locations are point data, therefor, we must first create a euclidean distance raster where each cell represents a distance in meters away from the closest substation.</p>
 <div class="cell">
@@ -571,18 +603,19 @@ background-size: cover;
 <span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in reclassified data folder</span></span>
 <span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(subs_reclass, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" title="Visualize Criteria 4 - Proximity to Substations">
+<div class="cell">
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Visualize Criteria 4 - Proximity to Substations</figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="proximity-to-demand-centers" class="level3">
-<h3 class="anchored" data-anchor-id="proximity-to-demand-centers">1.2.5 Proximity to Demand Centers</h3>
+<section id="proximity-to-demand-centers" class="level4">
+<h4 class="anchored" data-anchor-id="proximity-to-demand-centers">1.2.5 Proximity to Demand Centers</h4>
 <p>Data source: <a href="https://catalogue.data.gov.bc.ca/dataset/bc-major-cities-points-1-2-000-000-digital-baseline-mapping">BC Data Catalogue</a></p>
 <p>Repeat process using point locations of major cities.</p>
 <div class="cell">
@@ -621,18 +654,19 @@ background-size: cover;
 <span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in reclassified data folder</span></span>
 <span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(cities_reclass, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" title="Visualize Criteria 5 - Proximity to Demand Centers">
+<div class="cell">
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Visualize Criteria 5 - Proximity to Demand Centers</figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="proximity-to-major-roads" class="level3">
-<h3 class="anchored" data-anchor-id="proximity-to-major-roads">1.2.6 Proximity to Major Roads</h3>
+<section id="proximity-to-major-roads" class="level4">
+<h4 class="anchored" data-anchor-id="proximity-to-major-roads">1.2.6 Proximity to Major Roads</h4>
 <p>Data source: <a href="https://catalogue.data.gov.bc.ca/dataset/7-5m-major-roads-the-atlas-of-canada-base-maps">BC Data Catalogue</a></p>
 <p>Repeat process using locations of major roads.</p>
 <div class="cell">
@@ -671,66 +705,907 @@ background-size: cover;
 <span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Save in reclassified data folder</span></span>
 <span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(roads_reclass, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" title="Visualize Criteria 6 - Proximity to Major Roads">
+<div class="cell">
 <div class="cell-output-display">
-<div>
+<div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Visualize Criteria 6 - Proximity to Major Roads</figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
 </section>
-<section id="land-constraints-processing" class="level2">
-<h2 class="anchored" data-anchor-id="land-constraints-processing">1.3 Land Constraints Processing</h2>
-<p>This portion of the analysis creates the land constraints spatial mask used to eliminate land restricted from solar farm development due to technical, environmental, or regulatory factors.</p>
+<section id="land-constraints-processing" class="level3">
+<h3 class="anchored" data-anchor-id="land-constraints-processing">1.3 Land Constraints Processing</h3>
+<p>This portion of the analysis creates the land constraints spatial mask used to eliminate land from the suitability analysis that is restricted from solar farm development due to technical, environmental, or regulatory factors.</p>
 <p>Land constraints include:</p>
 <ol type="1">
 <li><p>Land covers - water, permanent snow and ice, wetlands, artificial and built environments</p></li>
-<li><p>All roads - including forest service roads and names roads</p></li>
+<li><p>Linear Features - All roads (including FSRs) and railways</p></li>
 <li><p>Densely forested areas (canopy density &gt; 40%)</p></li>
-<li><p>ALR land with a soil capability class of 1 and 2 (most arable land)</p></li>
+<li><p>Agricultural Land Reserve with a Soil Capability Class 1-3</p></li>
 <li><p>Protected and conserved areas</p></li>
 <li><p>Archaeologically and culturally sensitive areas</p></li>
 </ol>
-<p>Each layer will be transformed to a binary with 0 representing land to be included in the constraints mask and 1 representing land that is not included in the constraints mask and is therefor available for inclusion in the suitability model. Each layers ‘0’ cells will then be merged to create a master restriction zone layer.</p>
-<section id="land-cover" class="level3">
-<h3 class="anchored" data-anchor-id="land-cover">1.3.1 Land Cover</h3>
+<p>Each layer will be individually transformed to a binary where:</p>
+<ul>
+<li>0 = land included in the constraints mask (not suitable)</li>
+<li>1 = land that is not included in the constraints mask (suitable)</li>
+</ul>
+<p>Each layers cells classified as ‘0’ will then be merged to create a master restriction zone layer.</p>
+<section id="land-cover" class="level4">
+<h4 class="anchored" data-anchor-id="land-cover">1.3.1 Land Cover</h4>
+<p>Data source: <a href="https://www150.statcan.gc.ca/n1/pub/16-510-x/16-510-x2025002-eng.htm">Government Canada Census of Environment Land Cover Register</a></p>
+<p>Clean data:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View available layers in BC Digital Road Atlas geodatabase</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_layers</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Driver: OpenFileGDB 
-Available layers:
-               layer_name     geometry_type features fields          crs_name
-1                 VERSION                NA        1      1              &lt;NA&gt;
-2 DGTL_ROAD_ATLAS_MPAR_SP Multi Line String  1902879     14 NAD83 / BC Albers
-3 DGTL_ROAD_ATLAS_DPAR_SP Multi Line String   498411     14 NAD83 / BC Albers</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load in land cover register layer</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>lcr <span class="ot">=</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/LCR_RCT_2020.tif"</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a BC boundary layer in the projection of the lcr raster so that we can crop it. We cannot crop it using the template raster yet because the crs' are different and cannot alter the template without affecting the grid. </span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>target_crs <span class="ot">&lt;-</span> <span class="fu">crs</span>(lcr)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>bc_lcr_boundary <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_transform</span>(bc, target_crs)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Crop lcr to bc bounding box</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>lcr_crop <span class="ot">&lt;-</span> <span class="fu">crop</span>(lcr, bc_lcr_boundary) </span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Method = near - use nearest neighbor as method to preserve integer classification of original layer </span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>lcr_proj <span class="ot">&lt;-</span> <span class="fu">project</span>(lcr_crop, template, <span class="at">method =</span> <span class="st">"near"</span>)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask to BC administrative boundary</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>lcr_mask <span class="ot">&lt;-</span> <span class="fu">mask</span>(lcr_proj, template) </span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to cleaned constraints folder</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(lcr_mask, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/cleaned/lcr_cleaned.tif"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load in vector layer</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>roads <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Multiple layers are present in data source /Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb, reading layer `VERSION'.
-Use `st_layers' to list all layer names and their type in a data source.
-Set the `layer' argument in `st_read' to read a particular layer.</code></pre>
+<p>Reclassify to 1/0 binary using classification codes listed below:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Class Name</th>
+<th>Class Code</th>
+<th>Suitable?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Built up and artificial surface</td>
+<td>1</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td>Cropland</td>
+<td>2</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Inland water body</td>
+<td>3</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td>Treed (non-wetland)</td>
+<td>4</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Treed wetland</td>
+<td>5</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td>Treed area disturbance</td>
+<td>6</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Grassland and shrubland</td>
+<td>7</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Wetland (non-treed)</td>
+<td>8</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td>Sparsely vegetated land</td>
+<td>9</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>Barren land</td>
+<td>10</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>Permanent snow and ice</td>
+<td>11</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create reclassification scheme </span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 0 = not suitable - within constraints</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 = suitable - not within constraints</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>       <span class="dv">2</span>, <span class="dv">1</span>, </span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>       <span class="dv">3</span>, <span class="dv">0</span>, </span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>       <span class="dv">4</span>, <span class="dv">1</span>, </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>       <span class="dv">5</span>, <span class="dv">0</span>, </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>       <span class="dv">6</span>, <span class="dv">1</span>, </span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>       <span class="dv">7</span>, <span class="dv">1</span>,</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>       <span class="dv">8</span>, <span class="dv">0</span>, </span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>       <span class="dv">9</span>, <span class="dv">1</span>, </span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>       <span class="dv">10</span>, <span class="dv">1</span>, </span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>       <span class="dv">11</span>, <span class="dv">0</span>) </span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Create matrix</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>lcr_matrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(m, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply classification</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>lcr_binary <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">classify</span>(lcr_mask, lcr_matrix)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to reclassified folder</span></span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(lcr_binary, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_read_ogr(dsn, layer, query, as.character(options), quiet, :
-automatically selected the first layer in a data source containing more than
-one.</code></pre>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Constraint 1: Unsuitable Land Covers</figcaption>
+</figure>
 </div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `VERSION' from data source 
-  `/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb' 
-  using driver `OpenFileGDB'</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: no simple feature geometries present: returning a data.frame or tbl_df</code></pre>
+</div>
+</section>
+<section id="linear-features---roads-and-railways" class="level4">
+<h4 class="anchored" data-anchor-id="linear-features---roads-and-railways">1.3.2 Linear Features - Roads and Railways</h4>
+<p>Data source: <a href="https://catalogue.data.gov.bc.ca/dataset/digital-road-atlas-dra-master-partially-attributed-roads">BC Data Catalogue</a></p>
+<p>Clean the data by selecting the correct layer from the geodatabase, rasterizing it into a binary structure, and masking it to our template.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Roads</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># View available layers in BC Digital Road Atlas geodatabase</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">st_layers</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb"</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># DGTL_ROAD_ATLAS_MPAR_SP = includes all the demographic roads in addition to the full dataset of non-demographic roads - roads without names.</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># DGTL_ROAD_ATLAS_DPAR_SP = includes only roads that have names. These are primarily highways and local roads, along with named resource roads.</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Select road layer that contains ALL roads</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>roads <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/dgtl_road_atlas.gdb"</span>, <span class="at">layer =</span> <span class="st">"DGTL_ROAD_ATLAS_MPAR_SP"</span>) </span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert sf object to spatvect</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>roads_vect <span class="ot">&lt;-</span> <span class="fu">vect</span>(roads)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Rasterize layer and spatially conform to our template</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Set field to 0 (unsuitable) and background to 1 (suitable) so all non-road cells are assigned a value of 1</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>roads_rast <span class="ot">&lt;-</span> <span class="fu">rasterize</span>(roads_vect, template, <span class="at">field =</span> <span class="dv">0</span>, <span class="at">background =</span> <span class="dv">1</span>)</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask to the template </span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>roads_binary <span class="ot">&lt;-</span> <span class="fu">mask</span>(roads_rast, template)</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Save into the cleaned constraints folder</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(roads_binary, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif"</span>) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Railways</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in railway sf object </span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>rails <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Mask/Raw Data/railways.gpkg"</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert sf object to spatvect</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>rails_vect <span class="ot">&lt;-</span> <span class="fu">vect</span>(rails)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Rasterize layer and spatially conform to our template</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Set field to 0 (unsuitable) and background to 1 (suitable) so all non-road cells are assigned a value of 1</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>rails_rast <span class="ot">&lt;-</span> <span class="fu">rasterize</span>(rails_vect, template, <span class="at">field =</span> <span class="dv">0</span>, <span class="at">background =</span> <span class="dv">1</span>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask to the template </span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>rails_binary <span class="ot">&lt;-</span> <span class="fu">mask</span>(rails_rast, template)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Save into the cleaned constraints folder</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(rails_binary, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/rails_binary.tif"</span>) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Constraint 2: Linear Features - Roads and Railways</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="dense-forests" class="level4">
+<h4 class="anchored" data-anchor-id="dense-forests">1.3.3 Dense Forests</h4>
+<p>Because the land cover register defines treed areas as “land covered with trees with a canopy cover over 10%”, we want to further isolate and protect just those moderate-to-dense forests, which has a canopy cover of 40% (BC Ministry of Forests).</p>
+<p>Data source: <a href="https://opendata.nfis.org/mapserver/nfis-change_eng.html">National Terrestrial Ecosystem Monitoring System (NTEMS)</a></p>
+<p>Clean the data by isolating land with a canopy cover greater than 40% by creating a binary and then mask to our template.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in NTEMS canopy cover raster </span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>canopy <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Downloads/CA_canopy_cover_2022/CA_canopy_cover_2022.tif"</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co">#rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/CA_canopy_cover_2022.tif")</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a BC boundary layer in the projection of the canopy raster so that we can crop it. We cannot crop it using the template raster yet because the crs' are different and cannot alter the template without affecting the grid. </span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>target_crs <span class="ot">&lt;-</span> <span class="fu">crs</span>(canopy)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>bc_canopy_boundary <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_transform</span>(bc, target_crs)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Crop canopy cover raster to bc bounding box</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>canopy_crop <span class="ot">&lt;-</span> <span class="fu">crop</span>(canopy, bc_canopy_boundary) </span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Method = bilinear - use for continuous data</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>canopy_proj <span class="ot">&lt;-</span> <span class="fu">project</span>(canopy_crop, template, <span class="at">method =</span> <span class="st">"bilinear"</span>) </span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask to BC administrative boundary</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>canopy_mask <span class="ot">&lt;-</span> <span class="fu">mask</span>(canopy_proj, template) </span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to cleaned constraints folder</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(canopy_mask, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/cleaned/canopy_cleaned.tif"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Reclassify to 1/0 binary such that canopy cover &gt; 40% is 0 (unsuitable) and canopy cover &lt; 40% is 1 (suitable).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create reclassification scheme </span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 0 = not suitable - within constraints</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 = suitable - not within constraints</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">40</span>, <span class="dv">1</span>,</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>       <span class="dv">40</span>, <span class="dv">100</span>, <span class="dv">0</span>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create matrix</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>canopy_matrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(m, <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply classification</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>canopy_binary <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">classify</span>(canopy_mask, canopy_matrix)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to reclassified folder</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(canopy_binary, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Constraint 3: Dense Forests</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="agricultural-land-reserve-soil-capability" class="level4">
+<h4 class="anchored" data-anchor-id="agricultural-land-reserve-soil-capability">1.3.4 Agricultural Land Reserve / Soil Capability</h4>
+<p>Data source: <a href="https://www.alc.gov.bc.ca/alr-maps/">ALR GIS Data</a></p>
+<p>Data source:</p>
+<p>The ALR is a provincial land use zone that prioritizes and protects agricultural land. The <em>whole</em> ALR will not be included in the constraints - rather, only portions of the ALR with soil capability classes of 1 and 2 will be within the restriction zone. This will protect the most arable land from development, while also promoting the promising concept of agrovoltaics.</p>
+<p>To clean the data isolate polygons with a soil capability class less than 3 then intercept soil capability data with the ALR layer. Rasterize remaining data into a binary and mask to our template.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>soils <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Mask/Raw Data/50KAgCap.gdb"</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>alr <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Mask/Raw Data/ALR_Polygons/ALR_Polygons.shp"</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># View fields</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># CC_Label = capability class</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(soils)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create function that selects polygons that are at least 50% class 1, 2, OR 3. Creates a new column called pct_123. </span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>pct_class_123 <span class="ot">&lt;-</span> <span class="cf">function</span>(label) {</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.na</span>(label)) <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">str_match_all</span>(label, <span class="st">"(?:(</span><span class="sc">\\</span><span class="st">d+):)?(</span><span class="sc">\\</span><span class="st">d)[A-Za-z]*"</span>)[[<span class="dv">1</span>]]</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  pct   <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(m[,<span class="dv">2</span>]), <span class="dv">100</span>, <span class="fu">as.numeric</span>(m[,<span class="dv">2</span>]) <span class="sc">*</span> <span class="dv">10</span>)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>  class <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(m[,<span class="dv">3</span>])</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>(pct[class <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)])</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply function to soils sf object</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>prime_soils <span class="ot">&lt;-</span> soils <span class="sc">%&gt;%</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct_123 =</span> <span class="fu">sapply</span>(CC_Label, pct_class_123)) <span class="sc">%&gt;%</span></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(pct_123) <span class="sc">&amp;</span> pct_123 <span class="sc">&gt;=</span> <span class="dv">50</span>) </span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Intersect prime soils layer with the ALR polygons to create a new layer showing where the ALR and the prime soils polygons overlap. </span></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>alr_soils_int <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_intersection</span>(alr, prime_soils)</span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to spatvect</span></span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>alr_soils_vect <span class="ot">&lt;-</span> <span class="fu">vect</span>(alr_soils_int)</span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Rasterize layer and spatially conform to our template</span></span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Set field to 0 (unsuitable) and background to 1 (suitable) so all non-road cells are assigned a value of 1</span></span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>alr_soils_rast <span class="ot">&lt;-</span> <span class="fu">rasterize</span>(alr_soils_vect, template, <span class="at">field =</span> <span class="dv">0</span>, <span class="at">background =</span> <span class="dv">1</span>)</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask to the template </span></span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>alr_soils_binary <span class="ot">&lt;-</span> <span class="fu">mask</span>(alr_soils_rast, template)</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to reclassified folder</span></span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(alr_soils_binary, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Constraint 4: Prime Agricultural Land</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="protected-and-conserved-areas" class="level4">
+<h4 class="anchored" data-anchor-id="protected-and-conserved-areas">1.3.5 Protected and Conserved Areas</h4>
+<p>Data source: <a href="https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html">Canadian Protected and Conserved Areas Database</a></p>
+<p>Clean and rasterize data as usual, with the additional step of adding a 1km ecological buffer around Protected and Conserved Areas (PCA) polygons before rasterizing.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>pca <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Mask/Raw Data/ProtectedConservedArea_2024.gdb"</span>, <span class="at">layer =</span> <span class="st">"ProtectedConservedArea_2024"</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a BC boundary layer in the projection of the PCA raster so that we can crop it. We cannot crop it using the template raster yet because the crs' are different and cannot alter the template without affecting the grid. </span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>target_crs <span class="ot">&lt;-</span> <span class="fu">crs</span>(pca)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>bc_pca_boundary <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_transform</span>(bc, target_crs)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Clip PCA to BC bounding box</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>pca_clip <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_intersection</span>(pca, bc_pca_boundary) </span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Buffer 1000m</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>pca_buff <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_buffer</span>(pca_clip, <span class="dv">1000</span>)</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Make spatvect </span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>pca_buff_vect <span class="ot">&lt;-</span> <span class="fu">vect</span>(pca_buff)</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>pca_proj <span class="ot">&lt;-</span> <span class="fu">project</span>(pca_buff_vect, template)</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Rasterize into a binary, ensuring it spatially conforms to template</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>pca_rast <span class="ot">&lt;-</span> <span class="fu">rasterize</span>(pca_proj, template, <span class="at">field =</span> <span class="dv">0</span>, <span class="at">background =</span> <span class="dv">1</span>)</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask to the template </span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>pca_binary <span class="ot">&lt;-</span> <span class="fu">mask</span>(pca_rast, template)</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Save to cleaned constraints folder</span></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(pca_binary, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Constraint 5: Protected and Conserved Areas</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="archaeologically-and-culturally-sensitive-areas" class="level4">
+<h4 class="anchored" data-anchor-id="archaeologically-and-culturally-sensitive-areas">1.3.6 Archaeologically and Culturally Sensitive Areas</h4>
+<p>WAITING ON DATA</p>
+</section>
+</section>
+<section id="land-constraints-mask" class="level3">
+<h3 class="anchored" data-anchor-id="land-constraints-mask">1.4 Land Constraints Mask</h3>
+<p>Now that all data representing restriction zones are in binary raster format, we will easily combine them together into one master constraint mask to use on our final suitability surface.</p>
+<p>Logic: If all cells across all layers equals 0, cell in final mask will equal 0. If even one cell across all layers equal 1, cell in final mask will equal 1.</p>
+<p>We can use simple multiplication to accomplish this.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>constraints <span class="ot">&lt;-</span> (pca_binary <span class="sc">*</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>                alr_soils_binary <span class="sc">*</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                canopy_binary <span class="sc">*</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>                roads_binary <span class="sc">*</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>                rails_binary <span class="sc">*</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>                lcr_binary) </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Alternative method</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>all_cons <span class="ot">&lt;-</span> <span class="fu">c</span>(pca_binary, alr_soils_binary, canopy_binary, roads_binary, rails_binary, lcr_binary) </span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>sum_cons <span class="ot">&lt;-</span> <span class="fu">app</span>(all_cons, <span class="at">fun =</span> sum)</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>constraints <span class="ot">&lt;-</span> sum_cons <span class="sc">==</span> <span class="fu">nlyr</span>(all_cons) </span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>constraints <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(mask) </span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Save</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(constraints, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif"</span>)</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Quick read</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>constraints <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Determine how much of BC each land constraint occupies</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a named list</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>layers <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">LCR =</span> lcr_binary,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">ALR =</span> alr_soils_binary,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Canopy =</span> canopy_binary,</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Roads =</span> roads_binary,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Rails =</span> rails_binary,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">PCA =</span> pca_binary)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Loop through and check restriction percentage</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (name <span class="cf">in</span> <span class="fu">names</span>(layers)) {</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  layer <span class="ot">&lt;-</span> layers[[name]]</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  zeros <span class="ot">&lt;-</span> <span class="fu">freq</span>(layer, <span class="at">value =</span> <span class="dv">0</span>)<span class="sc">$</span>count</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>  pct_restricted <span class="ot">&lt;-</span> (zeros <span class="sc">/</span> <span class="fu">ncell</span>(layer)) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="fu">paste</span>(name, <span class="st">"restricted:"</span>, <span class="fu">round</span>(pct_restricted, <span class="dv">1</span>), <span class="st">"%"</span>))</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a><span class="co"># What % is actually restricted (value = 0)?</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>zeros <span class="ot">&lt;-</span> <span class="fu">freq</span>(constraints, <span class="at">value =</span> <span class="dv">0</span>)<span class="sc">$</span>count</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>pct_restricted <span class="ot">&lt;-</span> (zeros <span class="sc">/</span> <span class="fu">ncell</span>(constraints)) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Final mask restricted:"</span>, <span class="fu">round</span>(pct_restricted, <span class="dv">2</span>), <span class="st">"%"</span>))</span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">"Final mask suitable:"</span>, <span class="fu">round</span>(<span class="dv">100</span> <span class="sc">-</span> pct_restricted, <span class="dv">2</span>), <span class="st">"%"</span>)) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-37-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Land Constraints Mask</figcaption>
+</figure>
+</div>
 </div>
 </div>
 </section>
 </section>
+<section id="step-2-analytic-hierarchy-process" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-analytic-hierarchy-process">Step 2: Analytic Hierarchy Process</h2>
+<p>AHP is used to assign weights to each input criteria layer. A variety of experts have provided individual AHP weighting schemes. In this step, we use a for-loop to that will:</p>
+<ol type="1">
+<li>Read in multiple excel sheets holding the individual AHP-surveys</li>
+<li>Isolate and pull the Pairwise Comparison Matrix (PCM)</li>
+<li>Aggregate them using the geometric mean method</li>
+<li>Construct a master PCM</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>criteria <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"GTI"</span>, <span class="st">"Slope"</span>, <span class="st">"Aspect"</span>, <span class="st">"Prox to Cities"</span>, <span class="st">"Prox to Roads"</span>, <span class="st">"Prox to Substations"</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">length</span>(criteria)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in folder and store files in a string</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>folder_path <span class="ot">&lt;-</span> <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/ahp"</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>file_paths <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> folder_path, <span class="at">pattern =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.xlsx"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Create arrays of length n*n*number of surveys to store PCMs</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>all_matrices <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="cn">NA</span>, <span class="at">dim =</span> <span class="fu">c</span>(n, n, <span class="fu">length</span>(file_paths)))</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create loop that extracts PCM from each sheet and combines them</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(file_paths)) {</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pull PCM</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  matrix_df <span class="ot">&lt;-</span> <span class="fu">read_excel</span>( </span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    file_paths[i],</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">sheet =</span> <span class="st">"Solar"</span>,</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">range =</span> <span class="st">"C79:H84"</span>,</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert to standard numeric matrix</span></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(matrix_df)</span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  all_matrices[ , , i] <span class="ot">&lt;-</span> m</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate using Geometric Mean method </span></span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>master_pcm <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span>, <span class="at">nrow =</span> n, <span class="at">ncol =</span> n)</span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Rather than computing geometric mean into the upper triangle of the pcm and deriving the lower triangle as the reciprocal, we need to store the raw computed values in the lower triangle and derive the upper triangle as the reciprocal. We need to do this because of the way CR() checks the PCM. </span></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>(n <span class="sc">-</span> <span class="dv">1</span>)) {</span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> (i <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span>n) {</span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>    vals <span class="ot">&lt;-</span> all_matrices[i, j, ]</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>    g <span class="ot">&lt;-</span> <span class="fu">prod</span>(vals)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="fu">length</span>(vals))   <span class="co"># geometric mean, ratio "i vs j"</span></span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a>    h <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> g                            <span class="co"># ratio "j vs i" — this is our primitive value</span></span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>    master_pcm[j, i] <span class="ot">&lt;-</span> h        <span class="co"># store the primitive in the LOWER triangle</span></span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a>    master_pcm[i, j] <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> h    <span class="co"># derive UPPER as its reciprocal </span></span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure column diagonal is 1 and criteria names are present</span></span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(master_pcm) <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(master_pcm) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(master_pcm) <span class="ot">&lt;-</span> criteria</span>
+<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate Consistency Ratio (CR) - must be less than 10% (0.10) </span></span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>cr_results <span class="ot">&lt;-</span> <span class="fu">CR</span>(master_pcm)</span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(cr_results)</span>
+<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(master_pcm)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Now, derive layer weights from the PCM</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Isolate weights from the third output in cr_results</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>weights_raw <span class="ot">&lt;-</span> cr_results[<span class="dv">3</span>]</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Change from list to df</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>weights_raw <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(weights_raw)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Normalize table</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>weights_norm <span class="ot">&lt;-</span> weights_raw <span class="sc">/</span> <span class="fu">sum</span>(weights_raw) </span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to percent</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>weights_percent <span class="ot">&lt;-</span> weights_norm <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Get final weights in one df</span></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>ahp_weights <span class="ot">&lt;-</span> <span class="fu">cbind</span>(criteria, weights_norm, weights_percent)</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ahp_weights) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Criteria"</span>, <span class="st">"Decimal"</span>, <span class="st">"Percent"</span>)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(ahp_weights, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/ahp/ahp_weights.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-40-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="step-3-weighted-sum-overlay" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-weighted-sum-overlay">Step 3: Weighted Sum Overlay</h2>
+<p>This stage brings our weighted suitability criteria layers into one composite output using basic raster math. Each layer is multiplied by its weight and then added together - this is called a Weighted Sum Overlay.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load AHP-derived weights in a list</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">GTI =</span> <span class="fl">0.26275243</span>,</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">Slope =</span> <span class="fl">0.09270032</span>,</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">Aspect =</span> <span class="fl">0.08552311</span>,</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">Cities =</span> <span class="fl">0.11224992</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">Roads =</span> <span class="fl">0.14434327</span>,</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">Substations =</span> <span class="fl">0.30243095</span>)</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Load in cleaned, reclassified criteria layers if they aren't still saved in the Environment </span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>gti_reclassified <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif"</span>)</span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>slope_reclassified <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif"</span>)</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>aspect_reclassified <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif"</span>)</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>cities_reclassified <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif"</span>)</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>roads_reclassified <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif"</span>)</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>subs_reclassified <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif"</span>)</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Multiply layer by respective weight and add together to derive solar PV suitability across BC</span></span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>raw_suitability <span class="ot">&lt;-</span></span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>  gti_reclassified <span class="sc">*</span> w[<span class="st">"GTI"</span>] <span class="sc">+</span></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>  slope_reclassified <span class="sc">*</span> w[<span class="st">"Slope"</span>] <span class="sc">+</span></span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>  aspect_reclassified <span class="sc">*</span> w[<span class="st">"Aspect"</span>] <span class="sc">+</span></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>  cities_reclassified <span class="sc">*</span> w[<span class="st">"Cities"</span>] <span class="sc">+</span></span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a>  roads_reclassified <span class="sc">*</span> w[<span class="st">"Roads"</span>] <span class="sc">+</span></span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>  subs_reclassified <span class="sc">*</span> w[<span class="st">"Substations"</span>]</span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Save output</span></span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(raw_suitability, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif"</span>)</span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>raw_suitability <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Raw Suitability Gradient</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Transform the continuous suitability gradient back into our 5 integer bins using equal interval.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set bounds</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>suit_min <span class="ot">&lt;-</span> <span class="fu">global</span>(raw_suitability, <span class="st">"min"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>,<span class="dv">1</span>]</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>suit_max <span class="ot">&lt;-</span> <span class="fu">global</span>(raw_suitability, <span class="st">"max"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)[<span class="dv">1</span>,<span class="dv">1</span>]</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the 5 equal interval breaks</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>ei_breaks <span class="ot">&lt;-</span> <span class="fu">seq</span>(suit_min, suit_max, <span class="at">length.out =</span> <span class="dv">6</span>)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Build the 3-column matrix to force equal intervals </span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>m_ei <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  ei_breaks[<span class="dv">1</span>], ei_breaks[<span class="dv">2</span>], <span class="dv">1</span>,</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  ei_breaks[<span class="dv">2</span>], ei_breaks[<span class="dv">3</span>], <span class="dv">2</span>,</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  ei_breaks[<span class="dv">3</span>], ei_breaks[<span class="dv">4</span>], <span class="dv">3</span>,</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  ei_breaks[<span class="dv">4</span>], ei_breaks[<span class="dv">5</span>], <span class="dv">4</span>,</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  ei_breaks[<span class="dv">5</span>], ei_breaks[<span class="dv">6</span>], <span class="dv">5</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>), <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Classify using the matrix </span></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>classified_suitability <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">classify</span>(raw_suitability, <span class="at">rcl =</span> m_ei, <span class="at">include.lowest =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply land constraints mask</span></span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a><span class="co">#final_suitability &lt;- terra::mask(classified_suitability, constraints, maskvalues = 0, updatevalue = 0)</span></span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Load into second version</span></span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>final_suitability <span class="ot">&lt;-</span> classified_suitability</span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Mask using constraints 0 cells</span></span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a>final_suitability[constraints <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Save</span></span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(classified_suitability,<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(final_suitability, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-44-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Classified Suitability</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-45-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Masked Suitability</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="step-4-quantify-geographical-potential-results" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-quantify-geographical-potential-results">Step 4: Quantify Geographical Potential Results</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Quick Read</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>lcr_binary <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif"</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>roads_binary <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif"</span>)</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>rails_binary <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/rails_binary.tif"</span>)</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>canopy_binary <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif"</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>alr_soils_binary <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif"</span>)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>pca_binary <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif"</span>)</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>classified_suitability <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>final_suitability <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif"</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get suitability map data as a df</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>suitability_summary <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">freq</span>(final_suitability))</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(suitability_summary<span class="sc">$</span>count)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Get area of 1 pixel</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>pixel_area_km2 <span class="ot">&lt;-</span> <span class="fu">prod</span>(<span class="fu">res</span>(final_suitability)) <span class="sc">/</span> <span class="fl">1e6</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Populate area in km2 column </span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>suitability_summary<span class="sc">$</span>area_km2 <span class="ot">&lt;-</span> suitability_summary<span class="sc">$</span>count <span class="sc">*</span> pixel_area_km2</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Add acres column </span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>suitability_summary<span class="sc">$</span>acres <span class="ot">&lt;-</span> suitability_summary<span class="sc">$</span>area_km2 <span class="sc">*</span> <span class="fl">247.105</span> </span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Add percent of total land each class occupies</span></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(suitability_summary<span class="sc">$</span>area_km2) </span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>suitability_summary<span class="sc">$</span>percent_of_total <span class="ot">&lt;-</span> suitability_summary<span class="sc">$</span>area_km2 <span class="sc">/</span> <span class="fl">948572.3</span> <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(suitability_summary<span class="sc">$</span>percent_of_total) <span class="co">#100 :)</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>suitability_summary</span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize</span></span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">subset</span>(suitability_summary), </span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(value), <span class="at">y =</span> area_km2, <span class="at">fill =</span> <span class="fu">factor</span>(value))) <span class="sc">+</span></span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(percent_of_total, <span class="dv">3</span>), <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_number</span>(<span class="at">accuracy =</span> <span class="dv">1</span>, <span class="at">big.mark =</span> <span class="st">","</span>)) <span class="sc">+</span></span>
+<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"0"</span> <span class="ot">=</span> <span class="st">"#696969"</span>,</span>
+<span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"1"</span> <span class="ot">=</span> <span class="st">"#FFFFCC"</span>,  </span>
+<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"2"</span> <span class="ot">=</span> <span class="st">"#FECC5C"</span>,  </span>
+<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"3"</span> <span class="ot">=</span> <span class="st">"#FD8D3C"</span>,  </span>
+<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"4"</span> <span class="ot">=</span> <span class="st">"#F03B20"</span>,  </span>
+<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"5"</span> <span class="ot">=</span> <span class="st">"#BD0026"</span>), </span>
+<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a> <span class="at">name =</span> <span class="st">"Suitability Class"</span>, </span>
+<span id="cb31-35"><a href="#cb31-35" aria-hidden="true" tabindex="-1"></a> <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Restricted"</span>,</span>
+<span id="cb31-36"><a href="#cb31-36" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Least Suitable"</span>,</span>
+<span id="cb31-37"><a href="#cb31-37" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Less Suitable"</span>,</span>
+<span id="cb31-38"><a href="#cb31-38" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Moderately Suitable"</span>,</span>
+<span id="cb31-39"><a href="#cb31-39" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Suitable"</span>,</span>
+<span id="cb31-40"><a href="#cb31-40" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Very Suitable"</span>)) <span class="sc">+</span></span>
+<span id="cb31-41"><a href="#cb31-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Total Land Area by Suitability Class"</span>,</span>
+<span id="cb31-42"><a href="#cb31-42" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Percent of Total Area Labeled"</span>,</span>
+<span id="cb31-43"><a href="#cb31-43" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Suitability Class"</span>,</span>
+<span id="cb31-44"><a href="#cb31-44" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"Area (km"</span><span class="sc">^</span><span class="dv">2</span><span class="sc">*</span><span class="st">")"</span>)) <span class="sc">+</span></span>
+<span id="cb31-45"><a href="#cb31-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb31-46"><a href="#cb31-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.grid.major.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb31-47"><a href="#cb31-47" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"right"</span>)</span>
+<span id="cb31-48"><a href="#cb31-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-49"><a href="#cb31-49" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(suitability_summary, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_summary.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="stage-2-technical-potential" class="level1">
+<h1>Stage 2: Technical Potential</h1>
+<p>Data source: <a href="https://globalsolaratlas.info/download/canada">Global Solar Atlas</a></p>
+<p>Calculating the technical potential of the most suitable areas provides insight into the provinces total resource potential. This section utilizes Potential Photovoltaic Output data in combination with energy yield assumptions to derive two key results: Total Installable Capacity and Total Annual Energy.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in pvout data</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>pvout <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif"</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Isolate Class 4 &amp; 5 </span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>class4 <span class="ot">&lt;-</span> suitability_masked_v4</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>class4[suitability_masked_v4 <span class="sc">!=</span> <span class="dv">4</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span> </span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(class4, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4.tif"</span>)</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>class5 <span class="ot">&lt;-</span> suitability_masked_v4</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>class5[suitability_masked_v4 <span class="sc">!=</span> <span class="dv">5</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span> </span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(class5, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5.tif"</span>)</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Polygonize in Q</span></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>class4_poly <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4_polys.shp"</span>)</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>class5_poly <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5_polys.shp"</span>)</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out areas smaller than 5 acre footprint </span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 4</span></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_m2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(sf<span class="sc">::</span><span class="fu">st_area</span>(class4_poly))</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_acres <span class="ot">&lt;-</span> class4_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">4046.85642</span> </span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_km2 <span class="ot">&lt;-</span> class4_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">1e6</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_poly[class4_poly<span class="sc">$</span>Area_acres <span class="sc">&gt;</span> <span class="dv">5</span>, ]</span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Total area of all sites:</span></span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(class4_mmu<span class="sc">$</span>Area_km2)</span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 5</span></span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_m2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(sf<span class="sc">::</span><span class="fu">st_area</span>(class5_poly))</span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_acres <span class="ot">&lt;-</span> class5_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">4046.85642</span> </span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_km2 <span class="ot">&lt;-</span> class5_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">1e6</span></span>
+<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_poly[class5_poly<span class="sc">$</span>Area_acres <span class="sc">&gt;</span> <span class="dv">5</span>, ]</span>
+<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Total area of all sites:</span></span>
+<span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(class5_mmu<span class="sc">$</span>Area_km2)</span>
+<span id="cb32-33"><a href="#cb32-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-34"><a href="#cb32-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Add column of latitude of polygon centroid </span></span>
+<span id="cb32-35"><a href="#cb32-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 4</span></span>
+<span id="cb32-36"><a href="#cb32-36" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_mmu <span class="sc">%&gt;%</span></span>
+<span id="cb32-37"><a href="#cb32-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">latitude =</span> <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(<span class="fu">st_centroid</span>(geometry), <span class="dv">4326</span>))[, <span class="st">"Y"</span>])</span>
+<span id="cb32-38"><a href="#cb32-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-39"><a href="#cb32-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 5</span></span>
+<span id="cb32-40"><a href="#cb32-40" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_mmu <span class="sc">%&gt;%</span></span>
+<span id="cb32-41"><a href="#cb32-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">latitude =</span> <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(<span class="fu">st_centroid</span>(geometry), <span class="dv">4326</span>))[, <span class="st">"Y"</span>])</span>
+<span id="cb32-42"><a href="#cb32-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-43"><a href="#cb32-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Add column of latitude zone based on the band it falls within </span></span>
+<span id="cb32-44"><a href="#cb32-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-45"><a href="#cb32-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Latitude bands:</span></span>
+<span id="cb32-46"><a href="#cb32-46" aria-hidden="true" tabindex="-1"></a><span class="co"># North: 55.884 deg - 59.646 deg</span></span>
+<span id="cb32-47"><a href="#cb32-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Central: 52.122 deg - 55.884 deg </span></span>
+<span id="cb32-48"><a href="#cb32-48" aria-hidden="true" tabindex="-1"></a><span class="co"># South: 48.361 deg - 52.122 deg </span></span>
+<span id="cb32-49"><a href="#cb32-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-50"><a href="#cb32-50" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_mmu <span class="sc">%&gt;%</span></span>
+<span id="cb32-51"><a href="#cb32-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( </span>
+<span id="cb32-52"><a href="#cb32-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">lat_zone =</span> <span class="fu">case_when</span>(</span>
+<span id="cb32-53"><a href="#cb32-53" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">52.122</span>  <span class="sc">~</span> <span class="st">"South"</span>,</span>
+<span id="cb32-54"><a href="#cb32-54" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">55.884</span>  <span class="sc">~</span> <span class="st">"Central"</span>, <span class="co"># Anything between 52.122 and 55.884</span></span>
+<span id="cb32-55"><a href="#cb32-55" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>               <span class="sc">~</span> <span class="st">"North"</span>))   <span class="co"># Everything else (55.884 and above)</span></span>
+<span id="cb32-56"><a href="#cb32-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-57"><a href="#cb32-57" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_mmu <span class="sc">%&gt;%</span></span>
+<span id="cb32-58"><a href="#cb32-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( </span>
+<span id="cb32-59"><a href="#cb32-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">lat_zone =</span> <span class="fu">case_when</span>(</span>
+<span id="cb32-60"><a href="#cb32-60" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">52.122</span>  <span class="sc">~</span> <span class="st">"South"</span>,</span>
+<span id="cb32-61"><a href="#cb32-61" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">55.884</span>  <span class="sc">~</span> <span class="st">"Central"</span>, </span>
+<span id="cb32-62"><a href="#cb32-62" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>               <span class="sc">~</span> <span class="st">"North"</span>))   </span>
+<span id="cb32-63"><a href="#cb32-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-64"><a href="#cb32-64" aria-hidden="true" tabindex="-1"></a><span class="co"># 8. Energy yield calculations ----</span></span>
+<span id="cb32-65"><a href="#cb32-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-66"><a href="#cb32-66" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a named lookup vector for your GCR values based on the classifier attribute</span></span>
+<span id="cb32-67"><a href="#cb32-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-68"><a href="#cb32-68" aria-hidden="true" tabindex="-1"></a>gcr_lookup <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb32-69"><a href="#cb32-69" aria-hidden="true" tabindex="-1"></a>  <span class="st">"North"</span>   <span class="ot">=</span> <span class="fl">0.22663</span>,</span>
+<span id="cb32-70"><a href="#cb32-70" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Central"</span> <span class="ot">=</span> <span class="fl">0.26342</span>,</span>
+<span id="cb32-71"><a href="#cb32-71" aria-hidden="true" tabindex="-1"></a>  <span class="st">"South"</span>   <span class="ot">=</span> <span class="fl">0.31406</span>)</span>
+<span id="cb32-72"><a href="#cb32-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-73"><a href="#cb32-73" aria-hidden="true" tabindex="-1"></a><span class="co"># Process Class 4 and Class 5 using custom function </span></span>
+<span id="cb32-74"><a href="#cb32-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-75"><a href="#cb32-75" aria-hidden="true" tabindex="-1"></a>process_solar_sites <span class="ot">&lt;-</span> <span class="cf">function</span>(sf_layer, pvout_raster) {</span>
+<span id="cb32-76"><a href="#cb32-76" aria-hidden="true" tabindex="-1"></a>  sf_layer <span class="sc">%&gt;%</span></span>
+<span id="cb32-77"><a href="#cb32-77" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Dynamically assign the GCR based on the latitude band attribute</span></span>
+<span id="cb32-78"><a href="#cb32-78" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">GCR =</span> gcr_lookup[lat_zone]) <span class="sc">%&gt;%</span></span>
+<span id="cb32-79"><a href="#cb32-79" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Installable Capacity (Ci)</span></span>
+<span id="cb32-80"><a href="#cb32-80" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ci =</span> Area_m2 <span class="sc">*</span> <span class="fl">0.23</span> <span class="sc">*</span> <span class="fl">0.724</span> <span class="sc">*</span> GCR) <span class="sc">%&gt;%</span></span>
+<span id="cb32-81"><a href="#cb32-81" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract zonal mean pvout </span></span>
+<span id="cb32-82"><a href="#cb32-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pvout_mean =</span> <span class="fu">exact_extract</span>(pvout_raster, ., <span class="at">fun =</span> <span class="st">"mean"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb32-83"><a href="#cb32-83" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Annual Energy Production (Ei)</span></span>
+<span id="cb32-84"><a href="#cb32-84" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ei =</span> Ci <span class="sc">*</span> pvout_mean)</span>
+<span id="cb32-85"><a href="#cb32-85" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb32-86"><a href="#cb32-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-87"><a href="#cb32-87" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the function for both classes</span></span>
+<span id="cb32-88"><a href="#cb32-88" aria-hidden="true" tabindex="-1"></a>class4_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(class4_mmu, pvout)</span>
+<span id="cb32-89"><a href="#cb32-89" aria-hidden="true" tabindex="-1"></a>class5_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(class5_mmu, pvout)</span>
+<span id="cb32-90"><a href="#cb32-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-91"><a href="#cb32-91" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate for summary </span></span>
+<span id="cb32-92"><a href="#cb32-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-93"><a href="#cb32-93" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Capacity: convert kW to Megawatts (GW) for utility scale</span></span>
+<span id="cb32-94"><a href="#cb32-94" aria-hidden="true" tabindex="-1"></a>total_cap_cl4_GW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000</span></span>
+<span id="cb32-95"><a href="#cb32-95" aria-hidden="true" tabindex="-1"></a>total_cap_cl5_GW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000</span></span>
+<span id="cb32-96"><a href="#cb32-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-97"><a href="#cb32-97" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)</span></span>
+<span id="cb32-98"><a href="#cb32-98" aria-hidden="true" tabindex="-1"></a>total_eng_cl4_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
+<span id="cb32-99"><a href="#cb32-99" aria-hidden="true" tabindex="-1"></a>total_eng_cl5_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
+<span id="cb32-100"><a href="#cb32-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-101"><a href="#cb32-101" aria-hidden="true" tabindex="-1"></a><span class="co"># Print final utility reports </span></span>
+<span id="cb32-102"><a href="#cb32-102" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 4 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb32-103"><a href="#cb32-103" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl4_GW, <span class="dv">2</span>), <span class="st">"GW</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb32-104"><a href="#cb32-104" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl4_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb32-105"><a href="#cb32-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-106"><a href="#cb32-106" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 5 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb32-107"><a href="#cb32-107" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl5_GW, <span class="dv">2</span>), <span class="st">"GW</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb32-108"><a href="#cb32-108" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl5_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb32-109"><a href="#cb32-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-110"><a href="#cb32-110" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(class4_energy<span class="sc">$</span>pvout_mean) </span>
+<span id="cb32-111"><a href="#cb32-111" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(class5_energy<span class="sc">$</span>pvout_mean)</span>
+<span id="cb32-112"><a href="#cb32-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-113"><a href="#cb32-113" aria-hidden="true" tabindex="-1"></a><span class="co"># 9. Extract energy per district ----</span></span>
+<span id="cb32-114"><a href="#cb32-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-115"><a href="#cb32-115" aria-hidden="true" tabindex="-1"></a><span class="co"># Join top two suitability classes into one</span></span>
+<span id="cb32-116"><a href="#cb32-116" aria-hidden="true" tabindex="-1"></a>top_energy <span class="ot">&lt;-</span> <span class="fu">rbind</span>(class4_energy, class5_energy)</span>
+<span id="cb32-117"><a href="#cb32-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-118"><a href="#cb32-118" aria-hidden="true" tabindex="-1"></a><span class="co"># Intersect regional district layer with energy </span></span>
+<span id="cb32-119"><a href="#cb32-119" aria-hidden="true" tabindex="-1"></a>energy_rd <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_join</span>(top_energy, rd, <span class="at">join =</span> within, <span class="at">largest =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb32-120"><a href="#cb32-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-121"><a href="#cb32-121" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean table to provide summary stats</span></span>
+<span id="cb32-122"><a href="#cb32-122" aria-hidden="true" tabindex="-1"></a><span class="co"># Want to know total capacity and energy per RD within each class</span></span>
+<span id="cb32-123"><a href="#cb32-123" aria-hidden="true" tabindex="-1"></a>RegDis_energy <span class="ot">&lt;-</span> energy_rd <span class="sc">%&gt;%</span></span>
+<span id="cb32-124"><a href="#cb32-124" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(NAME_2, Ci, Ei, DN) <span class="sc">%&gt;%</span></span>
+<span id="cb32-125"><a href="#cb32-125" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(NAME_2) <span class="sc">%&gt;%</span></span>
+<span id="cb32-126"><a href="#cb32-126" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">total_capacity_GW =</span> <span class="fu">sum</span>(Ci)<span class="sc">/</span><span class="dv">1000000</span>,</span>
+<span id="cb32-127"><a href="#cb32-127" aria-hidden="true" tabindex="-1"></a>            <span class="at">total_energy_TWh =</span> <span class="fu">sum</span>(Ei)<span class="sc">/</span><span class="dv">1000000000</span>)</span>
+<span id="cb32-128"><a href="#cb32-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-129"><a href="#cb32-129" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop geometry to export</span></span>
+<span id="cb32-130"><a href="#cb32-130" aria-hidden="true" tabindex="-1"></a>RegDis_energy_df <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_drop_geometry</span>(RegDis_energy) </span>
+<span id="cb32-131"><a href="#cb32-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-132"><a href="#cb32-132" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(RegDis_energy_df, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Suitability Surfaces/Spreadsheets/RegDis_energy_summary.csv"</span>)</span>
+<span id="cb32-133"><a href="#cb32-133" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-134"><a href="#cb32-134" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare Peace River against a top Southern District (e.g., "Okanagan-Similkameen" or "East Kootenay")</span></span>
+<span id="cb32-135"><a href="#cb32-135" aria-hidden="true" tabindex="-1"></a>diagnostic_check <span class="ot">&lt;-</span> energy_rd <span class="sc">%&gt;%</span></span>
+<span id="cb32-136"><a href="#cb32-136" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb32-137"><a href="#cb32-137" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(NAME_2) <span class="sc">%&gt;%</span></span>
+<span id="cb32-138"><a href="#cb32-138" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb32-139"><a href="#cb32-139" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_polygons_passed =</span> <span class="fu">n</span>(),</span>
+<span id="cb32-140"><a href="#cb32-140" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_poly_area_acres   =</span> <span class="fu">mean</span>(Area_acres),</span>
+<span id="cb32-141"><a href="#cb32-141" aria-hidden="true" tabindex="-1"></a>    <span class="at">assigned_GCR          =</span> <span class="fu">mean</span>(GCR),</span>
+<span id="cb32-142"><a href="#cb32-142" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_pvout             =</span> <span class="fu">mean</span>(pvout_mean),</span>
+<span id="cb32-143"><a href="#cb32-143" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_capacity_GW     =</span> <span class="fu">sum</span>(Ci)<span class="sc">/</span><span class="fl">1e6</span></span>
+<span id="cb32-144"><a href="#cb32-144" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb32-145"><a href="#cb32-145" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(total_capacity_GW))</span>
+<span id="cb32-146"><a href="#cb32-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-147"><a href="#cb32-147" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(diagnostic_check)</span>
+<span id="cb32-148"><a href="#cb32-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-149"><a href="#cb32-149" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Define a named lookup vector for your GCR values based on the classifier attribute</span></span>
+<span id="cb32-150"><a href="#cb32-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-151"><a href="#cb32-151" aria-hidden="true" tabindex="-1"></a>gcr_lookup <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb32-152"><a href="#cb32-152" aria-hidden="true" tabindex="-1"></a>  <span class="st">"North"</span>   <span class="ot">=</span> <span class="fl">0.22663</span>,</span>
+<span id="cb32-153"><a href="#cb32-153" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Central"</span> <span class="ot">=</span> <span class="fl">0.26342</span>,</span>
+<span id="cb32-154"><a href="#cb32-154" aria-hidden="true" tabindex="-1"></a>  <span class="st">"South"</span>   <span class="ot">=</span> <span class="fl">0.31406</span>) </span>
+<span id="cb32-155"><a href="#cb32-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-156"><a href="#cb32-156" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Read in the master class layers - filtered for sites &gt; 5 acres, assigned a lat of polygon centroid, </span></span>
+<span id="cb32-157"><a href="#cb32-157" aria-hidden="true" tabindex="-1"></a><span class="co"># and assigned a lat_zone (either North, Central, or South) - and cleaned PVOUT data</span></span>
+<span id="cb32-158"><a href="#cb32-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-159"><a href="#cb32-159" aria-hidden="true" tabindex="-1"></a>cl4_mmu <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/cl4_mmu_lat.shp"</span>)</span>
+<span id="cb32-160"><a href="#cb32-160" aria-hidden="true" tabindex="-1"></a>cl5_mmu <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/cl5_mmu_lat.shp"</span>)</span>
+<span id="cb32-161"><a href="#cb32-161" aria-hidden="true" tabindex="-1"></a>pvout <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif"</span>)</span>
+<span id="cb32-162"><a href="#cb32-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-163"><a href="#cb32-163" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Process Class 4 and Class 5 using custom function </span></span>
+<span id="cb32-164"><a href="#cb32-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-165"><a href="#cb32-165" aria-hidden="true" tabindex="-1"></a>process_solar_sites <span class="ot">&lt;-</span> <span class="cf">function</span>(sf_layer, pvout_raster) {</span>
+<span id="cb32-166"><a href="#cb32-166" aria-hidden="true" tabindex="-1"></a>  sf_layer <span class="sc">%&gt;%</span></span>
+<span id="cb32-167"><a href="#cb32-167" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Dynamically assign the GCR based on the latitude band attribute</span></span>
+<span id="cb32-168"><a href="#cb32-168" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">GCR =</span> gcr_lookup[lat_zone]) <span class="sc">%&gt;%</span></span>
+<span id="cb32-169"><a href="#cb32-169" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Installable Capacity (Ci)</span></span>
+<span id="cb32-170"><a href="#cb32-170" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ci =</span> Area_m2 <span class="sc">*</span> <span class="fl">0.23</span> <span class="sc">*</span> <span class="fl">0.724</span> <span class="sc">*</span> GCR) <span class="sc">%&gt;%</span></span>
+<span id="cb32-171"><a href="#cb32-171" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract zonal mean pvout </span></span>
+<span id="cb32-172"><a href="#cb32-172" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pvout_mean =</span> <span class="fu">exact_extract</span>(pvout_raster, ., <span class="at">fun =</span> <span class="st">"mean"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb32-173"><a href="#cb32-173" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Annual Energy Production (Ei)</span></span>
+<span id="cb32-174"><a href="#cb32-174" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ei =</span> Ci <span class="sc">*</span> pvout_mean)</span>
+<span id="cb32-175"><a href="#cb32-175" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb32-176"><a href="#cb32-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-177"><a href="#cb32-177" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the pipeline for both classes</span></span>
+<span id="cb32-178"><a href="#cb32-178" aria-hidden="true" tabindex="-1"></a>class4_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(cl4_mmu, pvout)</span>
+<span id="cb32-179"><a href="#cb32-179" aria-hidden="true" tabindex="-1"></a>class5_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(cl5_mmu, pvout)</span>
+<span id="cb32-180"><a href="#cb32-180" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-181"><a href="#cb32-181" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate for summary </span></span>
+<span id="cb32-182"><a href="#cb32-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-183"><a href="#cb32-183" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Capacity: convert kW to Megawatts (MW) for utility scale</span></span>
+<span id="cb32-184"><a href="#cb32-184" aria-hidden="true" tabindex="-1"></a>total_cap_cl4_MW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000</span></span>
+<span id="cb32-185"><a href="#cb32-185" aria-hidden="true" tabindex="-1"></a>total_cap_cl5_MW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000</span></span>
+<span id="cb32-186"><a href="#cb32-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-187"><a href="#cb32-187" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)</span></span>
+<span id="cb32-188"><a href="#cb32-188" aria-hidden="true" tabindex="-1"></a>total_eng_cl4_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
+<span id="cb32-189"><a href="#cb32-189" aria-hidden="true" tabindex="-1"></a>total_eng_cl5_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
+<span id="cb32-190"><a href="#cb32-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-191"><a href="#cb32-191" aria-hidden="true" tabindex="-1"></a><span class="co"># Print final utility reports </span></span>
+<span id="cb32-192"><a href="#cb32-192" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 4 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb32-193"><a href="#cb32-193" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl4_MW, <span class="dv">2</span>), <span class="st">"MW</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb32-194"><a href="#cb32-194" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl4_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb32-195"><a href="#cb32-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-196"><a href="#cb32-196" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 5 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb32-197"><a href="#cb32-197" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl5_MW, <span class="dv">2</span>), <span class="st">"MW</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb32-198"><a href="#cb32-198" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl5_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb32-199"><a href="#cb32-199" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(class4_energy<span class="sc">$</span>pvout_mean) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
 
 </main>

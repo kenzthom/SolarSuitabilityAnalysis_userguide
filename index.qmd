@@ -17,9 +17,9 @@ As electricity demand grows across British Columbia, more renewable energy insta
 
 This analysis is broken down into 2 main sections:
 
-**Section 1** determines the geographical potential of BC - the total land area where solar farm development is possible.
+**Stage 1** determines the geographical potential of BC - the total land area where solar farm development is possible.
 
-**Section 2** determines the technical potential of BC - the total energy these sites could produce on a yearly basis.
+**Stage 2** determines the technical potential of BC - the total energy these sites could produce on a yearly basis.
 
 By providing clear and accessible information on renewable energy potential, this project helps accelerate clean energy development, informs decision-making and supports BC's transformation to a more resilient and sustainable electricity system.
 
@@ -53,11 +53,12 @@ library(dplyr)
 library(classInt)
 library(bcmaps)
 library(stringr)
+library(readxl)
 ```
 
 I recommend setting up an organized file system, similar to the one below, to save your intermediate outputs and final results.
 
-```text
+```{text}
 Solar_Suitability/
 ├── raw_data/
 ├── criteria/
@@ -71,7 +72,7 @@ Solar_Suitability/
 └── suitability_surfaces/
     ├── unmasked/        # Suitability results without constraints mask
     └── masked/          # Suitability results with constraints mask
-```‎
+```
 
 # Stage 1: Geographical Potential
 
@@ -629,7 +630,7 @@ Land constraints include:
 
 2.  Linear Features - All roads (including FSRs) and railways
 
-3.  Densely forested areas (canopy density \> 40%)
+3.  Densely forested areas (canopy density > 40%)
 
 4.  Agricultural Land Reserve with a Soil Capability Class 1-3 
 
@@ -723,7 +724,7 @@ writeRaster(lcr_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/
 ```{r}
 #| echo: false
 #| fig-cap: "Constraint 1: Unsuitable Land Covers"
-cons_cols <- c("#696969", "#228B22")
+cons_cols <- c("#696969", "#35CC35")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif"), col=cons_cols)
 ```
 
@@ -789,15 +790,15 @@ writeRaster(rails_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UB
 #| echo: false
 #| fig-cap: "Constraint 2: Linear Features - Roads and Railways "
 
-cons_cols <- c("#696969", "#228B22")
+cons_cols <- c("#696969", "#35CC35")
 
-r_roads <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif")
-r_rails <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/rails_binary.tif")
+roads_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif")
+rails_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/rails_binary.tif")
 
 # Set base layout and tell terra plot not to reset par
 par(mfrow = c(1, 2))
-plot(r_roads, col = cons_cols, main = "Roads")
-plot(r_rails, col = cons_cols, main = "Railways")
+plot(roads_binary, col = cons_cols, main = "Roads")
+plot(rails_binary, col = cons_cols, main = "Railways")
 ```
 
 #### 1.3.3 Dense Forests
@@ -860,7 +861,7 @@ writeRaster(canopy_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-U
 ```{r}
 #| echo: false
 #| fig-cap: "Constraint 3: Dense Forests"
-cons_cols <- c("#696969", "#228B22")
+cons_cols <- c("#696969", "#35CC35")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif"), col=cons_cols)
 ```
 
@@ -922,7 +923,7 @@ writeRaster(alr_soils_binary, "/Users/kenziethomson/Library/CloudStorage/OneDriv
 ```{r}
 #| echo: false
 #| fig-cap: "Constraint 4: Prime Agricultural Land"
-cons_cols <- c("#696969", "#228B22")
+cons_cols <- c("#696969", "#35CC35")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif"), col=cons_cols)
 ```
 
@@ -967,7 +968,7 @@ writeRaster(pca_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/
 ```{r}
 #| echo: false
 #| fig-cap: "Constraint 5: Protected and Conserved Areas"
-cons_cols <- c("#696969", "#228B22")
+cons_cols <- c("#696969", "#35CC35")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif"), col=cons_cols)
 ```
 
@@ -992,10 +993,50 @@ constraints <- (pca_binary *
                 canopy_binary *
                 roads_binary *
                 rails_binary *
-                lcr_binary)
+                lcr_binary) 
+
+# Alternative method
+all_cons <- c(pca_binary, alr_soils_binary, canopy_binary, roads_binary, rails_binary, lcr_binary) 
+sum_cons <- app(all_cons, fun = sum)
+constraints <- sum_cons == nlyr(all_cons) 
+constraints <- as.numeric(mask) 
 
 # Save
 writeRaster(constraints, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif")
+
+# Quick read
+constraints <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif")
+```
+
+Determine how much of BC each land constraint occupies 
+
+```{r}
+#| message: false
+#| eval: false
+
+# Create a named list
+layers <- list(
+  LCR = lcr_binary,
+  ALR = alr_soils_binary,
+  Canopy = canopy_binary,
+  Roads = roads_binary,
+  Rails = rails_binary,
+  PCA = pca_binary)
+
+# Loop through and check restriction percentage
+for (name in names(layers)) {
+  layer <- layers[[name]]
+  zeros <- freq(layer, value = 0)$count
+  pct_restricted <- (zeros / ncell(layer)) * 100
+  print(paste(name, "restricted:", round(pct_restricted, 1), "%"))
+}
+
+# What % is actually restricted (value = 0)?
+zeros <- freq(constraints, value = 0)$count
+pct_restricted <- (zeros / ncell(constraints)) * 100
+
+print(paste("Final mask restricted:", round(pct_restricted, 2), "%"))
+print(paste("Final mask suitable:", round(100 - pct_restricted, 2), "%")) 
 ```
 
 ```{r}
@@ -1007,6 +1048,489 @@ plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_
 
 ## Step 2: Analytic Hierarchy Process
 
+AHP is used to assign weights to each input criteria layer. A variety of experts have provided individual AHP weighting schemes. In this step, we use a for-loop to that will:
+
+1. Read in multiple excel sheets holding the individual AHP-surveys
+2. Isolate and pull the Pairwise Comparison Matrix (PCM)
+3. Aggregate them using the geometric mean method 
+4. Construct a master PCM
+
+```{r}
+#| message: false
+#| eval: false
+
+criteria <- c("GTI", "Slope", "Aspect", "Prox to Cities", "Prox to Roads", "Prox to Substations")
+n <- length(criteria)
+
+# Read in folder and store files in a string
+folder_path <- "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/ahp"
+file_paths <- list.files(path = folder_path, pattern = "\\.xlsx", full.names = TRUE) 
+
+# Create arrays of length n*n*number of surveys to store PCMs
+all_matrices <- array(NA, dim = c(n, n, length(file_paths)))
+
+# Create loop that extracts PCM from each sheet and combines them
+for (i in seq_along(file_paths)) {
+  # Pull PCM
+  matrix_df <- read_excel( 
+    file_paths[i],
+    sheet = "Solar",
+    range = "C79:H84",
+    col_names = FALSE)
+  
+  # Convert to standard numeric matrix
+  m <- as.matrix(matrix_df)
+  all_matrices[ , , i] <- m
+}
+
+# Aggregate using Geometric Mean method 
+master_pcm <- matrix(1, nrow = n, ncol = n)
+
+# Rather than computing geometric mean into the upper triangle of the pcm and deriving the lower triangle as the reciprocal, we need to store the raw computed values in the lower triangle and derive the upper triangle as the reciprocal. We need to do this because of the way CR() checks the PCM. 
+for (i in 1:(n - 1)) {
+  for (j in (i + 1):n) {
+    vals <- all_matrices[i, j, ]
+    g <- prod(vals)^(1 / length(vals))   # geometric mean, ratio "i vs j"
+    h <- 1 / g                            # ratio "j vs i" — this is our primitive value
+
+    master_pcm[j, i] <- h        # store the primitive in the LOWER triangle
+    master_pcm[i, j] <- 1 / h    # derive UPPER as its reciprocal 
+  }
+}
+
+# Ensure column diagonal is 1 and criteria names are present
+diag(master_pcm) <- 1
+colnames(master_pcm) <- rownames(master_pcm) <- criteria
+
+# Calculate Consistency Ratio (CR) - must be less than 10% (0.10) 
+cr_results <- CR(master_pcm)
+
+print(cr_results)
+print(master_pcm)
+```
+
+Now, derive layer weights from the PCM
+
+```{r}
+#| message: false
+#| eval: false
+
+# Isolate weights from the third output in cr_results
+weights_raw <- cr_results[3]
+
+# Change from list to df
+weights_raw <- as.data.frame(weights_raw)
+
+# Normalize table
+weights_norm <- weights_raw / sum(weights_raw) 
+
+# Convert to percent
+weights_percent <- weights_norm * 100
+
+# Get final weights in one df
+ahp_weights <- cbind(criteria, weights_norm, weights_percent)
+colnames(ahp_weights) <- c("Criteria", "Decimal", "Percent")
+
+write.csv(ahp_weights, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/ahp/ahp_weights.csv")
+```
+
+```{r}
+#| echo: false
+ahp_weights <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/ahp/ahp_weights.csv")
+ggplot(ahp_weights, aes(x = reorder(Criteria, Percent), y = Percent)) +
+  geom_col(fill = "#A663E0") +
+  geom_text(aes(label = round(Percent, 2)), nudge_y = 0.7) +
+  labs(title = "Suitability Criteria Weight",
+       x = "Criteria",
+       y = "Weight (%)") +
+  theme_minimal()
+```
+
 ## Step 3: Weighted Sum Overlay
 
+This stage brings our weighted suitability criteria layers into one composite output using basic raster math. Each layer is multiplied by its weight and then added together - this is called a Weighted Sum Overlay. 
+
+```{r}
+#| message: false
+#| eval: false
+
+# Load AHP-derived weights in a list
+w <- c(GTI = 0.26275243,
+       Slope = 0.09270032,
+       Aspect = 0.08552311,
+       Cities = 0.11224992,
+       Roads = 0.14434327,
+       Substations = 0.30243095)
+
+# Load in cleaned, reclassified criteria layers if they aren't still saved in the Environment 
+gti_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif")
+slope_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif")
+aspect_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif")
+cities_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif")
+roads_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif")
+subs_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif")
+
+# Multiply layer by respective weight and add together to derive solar PV suitability across BC
+raw_suitability <-
+  gti_reclassified * w["GTI"] +
+  slope_reclassified * w["Slope"] +
+  aspect_reclassified * w["Aspect"] +
+  cities_reclassified * w["Cities"] +
+  roads_reclassified * w["Roads"] +
+  subs_reclassified * w["Substations"]
+
+# Save output
+writeRaster(raw_suitability, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif")
+
+raw_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Raw Suitability Gradient"
+y_to_r <- colorRampPalette(c("#FFFFCC", "#FECC5C","#FD8D3C", "#F03B20", "#BD0026"))
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif"), col = y_to_r(100))
+```
+
+Transform the continuous suitability gradient back into our 5 integer bins using equal interval.
+
+```{r}
+#| message: false
+#| eval: false
+
+# Set bounds
+suit_min <- global(raw_suitability, "min", na.rm = TRUE)[1,1]
+suit_max <- global(raw_suitability, "max", na.rm = TRUE)[1,1]
+
+# Create the 5 equal interval breaks
+ei_breaks <- seq(suit_min, suit_max, length.out = 6)
+
+# Build the 3-column matrix to force equal intervals 
+m_ei <- matrix(c(
+  ei_breaks[1], ei_breaks[2], 1,
+  ei_breaks[2], ei_breaks[3], 2,
+  ei_breaks[3], ei_breaks[4], 3,
+  ei_breaks[4], ei_breaks[5], 4,
+  ei_breaks[5], ei_breaks[6], 5
+), ncol = 3, byrow = TRUE)
+
+# Classify using the matrix 
+classified_suitability <- terra::classify(raw_suitability, rcl = m_ei, include.lowest = TRUE)
+
+# Apply land constraints mask
+#final_suitability <- terra::mask(classified_suitability, constraints, maskvalues = 0, updatevalue = 0)
+
+# Load into second version
+final_suitability <- classified_suitability
+
+# Mask using constraints 0 cells
+final_suitability[constraints == 0] <- 0
+
+# Save
+writeRaster(classified_suitability,"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif", overwrite = TRUE)
+writeRaster(final_suitability, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif", overwrite = TRUE)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Classified Suitability"
+suitability_cols <- c("1" = "#FFFFCC", 
+                      "2" = "#FECC5C",
+                      "3" = "#FD8D3C",
+                      "4" = "#F03B20",
+                      "5" = "#BD0026")
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif"), col = suitability_cols)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Masked Suitability"
+suitability_cols <- c("#696969", "#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif"), col = suitability_cols)
+```
+
+## Step 4: Quantify Geographical Potential Results 
+
+```{r}
+#| message: false
+#| eval: false
+
+# Quick Read
+lcr_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif")
+roads_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif")
+rails_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/rails_binary.tif")
+canopy_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif")
+alr_soils_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif")
+pca_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif")
+classified_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif", overwrite = TRUE)
+final_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif", overwrite = TRUE)
+```
+
+
+```{r}
+#| message: false
+#| eval: false
+
+# Get suitability map data as a df
+suitability_summary <- as.data.frame(freq(final_suitability))
+
+sum(suitability_summary$count)
+
+# Get area of 1 pixel
+pixel_area_km2 <- prod(res(final_suitability)) / 1e6
+
+# Populate area in km2 column 
+suitability_summary$area_km2 <- suitability_summary$count * pixel_area_km2
+
+# Add acres column 
+suitability_summary$acres <- suitability_summary$area_km2 * 247.105 
+
+# Add percent of total land each class occupies
+sum(suitability_summary$area_km2) 
+suitability_summary$percent_of_total <- suitability_summary$area_km2 / 948572.3 * 100
+sum(suitability_summary$percent_of_total) #100 :)
+
+suitability_summary
+
+# Visualize
+ggplot(subset(suitability_summary), 
+       aes(x = factor(value), y = area_km2, fill = factor(value))) +
+  geom_col() +
+  geom_text(aes(label = round(percent_of_total, 3), vjust = -0.5)) +
+  scale_y_continuous(labels = scales::label_number(accuracy = 1, big.mark = ",")) +
+  scale_fill_manual(values = c("0" = "#696969",
+                               "1" = "#FFFFCC",  
+                               "2" = "#FECC5C",  
+                               "3" = "#FD8D3C",  
+                               "4" = "#F03B20",  
+                               "5" = "#BD0026"), 
+ name = "Suitability Class", 
+ labels = c("Restricted",
+             "Least Suitable",
+             "Less Suitable",
+             "Moderately Suitable",
+             "Suitable",
+             "Very Suitable")) +
+  labs(title = "Total Land Area by Suitability Class",
+       subtitle = "Percent of Total Area Labeled",
+       x = "Suitability Class",
+       y = expression("Area (km"^2*")")) +
+  theme_minimal() +
+  theme(panel.grid.major.x = element_blank(),
+        legend.position = "right")
+
+write.csv(suitability_summary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_summary.csv")
+```
+
 # Stage 2: Technical Potential
+
+Data source: [Global Solar Atlas](https://globalsolaratlas.info/download/canada) 
+
+Calculating the technical potential of the most suitable areas provides insight into the provinces total resource potential. This section utilizes Potential Photovoltaic Output data in combination with energy yield assumptions to derive two key results: Total Installable Capacity and Total Annual Energy. 
+
+```{r}
+#| message: false
+#| eval: false 
+
+# Read in pvout data
+pvout <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif")
+
+# Isolate Class 4 & 5 
+class4 <- suitability_masked_v4
+class4[suitability_masked_v4 != 4] <- NA 
+writeRaster(class4, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4.tif")
+
+class5 <- suitability_masked_v4
+class5[suitability_masked_v4 != 5] <- NA 
+writeRaster(class5, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5.tif")
+
+# Polygonize in Q
+class4_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4_polys.shp")
+class5_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5_polys.shp")
+
+# Filter out areas smaller than 5 acre footprint 
+# Class 4
+class4_poly$Area_m2 <- as.numeric(sf::st_area(class4_poly))
+class4_poly$Area_acres <- class4_poly$Area_m2 / 4046.85642 
+class4_poly$Area_km2 <- class4_poly$Area_m2 / 1e6
+class4_mmu <- class4_poly[class4_poly$Area_acres > 5, ]
+# Total area of all sites:
+sum(class4_mmu$Area_km2)
+
+# Class 5
+class5_poly$Area_m2 <- as.numeric(sf::st_area(class5_poly))
+class5_poly$Area_acres <- class5_poly$Area_m2 / 4046.85642 
+class5_poly$Area_km2 <- class5_poly$Area_m2 / 1e6
+class5_mmu <- class5_poly[class5_poly$Area_acres > 5, ]
+# Total area of all sites:
+sum(class5_mmu$Area_km2)
+
+# Add column of latitude of polygon centroid 
+# Class 4
+class4_mmu <- class4_mmu %>%
+  mutate(latitude = st_coordinates(st_transform(st_centroid(geometry), 4326))[, "Y"])
+
+# Class 5
+class5_mmu <- class5_mmu %>%
+  mutate(latitude = st_coordinates(st_transform(st_centroid(geometry), 4326))[, "Y"])
+
+# Add column of latitude zone based on the band it falls within 
+
+# Latitude bands:
+# North: 55.884 deg - 59.646 deg
+# Central: 52.122 deg - 55.884 deg 
+# South: 48.361 deg - 52.122 deg 
+
+class4_mmu <- class4_mmu %>%
+  mutate( 
+    lat_zone = case_when(
+      latitude < 52.122  ~ "South",
+      latitude < 55.884  ~ "Central", # Anything between 52.122 and 55.884
+      TRUE               ~ "North"))   # Everything else (55.884 and above)
+
+class5_mmu <- class5_mmu %>%
+  mutate( 
+    lat_zone = case_when(
+      latitude < 52.122  ~ "South",
+      latitude < 55.884  ~ "Central", 
+      TRUE               ~ "North"))   
+
+# 8. Energy yield calculations ----
+
+# Define a named lookup vector for your GCR values based on the classifier attribute
+
+gcr_lookup <- c(
+  "North"   = 0.22663,
+  "Central" = 0.26342,
+  "South"   = 0.31406)
+
+# Process Class 4 and Class 5 using custom function 
+
+process_solar_sites <- function(sf_layer, pvout_raster) {
+  sf_layer %>%
+    # Dynamically assign the GCR based on the latitude band attribute
+    mutate(GCR = gcr_lookup[lat_zone]) %>%
+    # Calculate Installable Capacity (Ci)
+    mutate(Ci = Area_m2 * 0.23 * 0.724 * GCR) %>%
+    # Extract zonal mean pvout 
+    mutate(pvout_mean = exact_extract(pvout_raster, ., fun = "mean")) %>%
+    # Calculate Annual Energy Production (Ei)
+    mutate(Ei = Ci * pvout_mean)
+}
+
+# Run the function for both classes
+class4_energy <- process_solar_sites(class4_mmu, pvout)
+class5_energy <- process_solar_sites(class5_mmu, pvout)
+
+# Aggregate for summary 
+
+# Total Capacity: convert kW to Megawatts (GW) for utility scale
+total_cap_cl4_GW <- sum(class4_energy$Ci, na.rm = TRUE) / 1000000
+total_cap_cl5_GW <- sum(class5_energy$Ci, na.rm = TRUE) / 1000000
+
+# Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)
+total_eng_cl4_TWh <- sum(class4_energy$Ei, na.rm = TRUE) / 1000000000
+total_eng_cl5_TWh <- sum(class5_energy$Ei, na.rm = TRUE) / 1000000000
+
+# Print final utility reports 
+cat("--- CLASS 4 RESULTS ---\n",
+    "Total Capacity:", round(total_cap_cl4_GW, 2), "GW\n",
+    "Annual Yield  :", round(total_eng_cl4_TWh, 2), "TWh/year\n\n")
+
+cat("--- CLASS 5 RESULTS ---\n",
+    "Total Capacity:", round(total_cap_cl5_GW, 2), "GW\n",
+    "Annual Yield  :", round(total_eng_cl5_TWh, 2), "TWh/year\n")
+
+mean(class4_energy$pvout_mean) 
+mean(class5_energy$pvout_mean)
+
+# 9. Extract energy per district ----
+
+# Join top two suitability classes into one
+top_energy <- rbind(class4_energy, class5_energy)
+
+# Intersect regional district layer with energy 
+energy_rd <- sf::st_join(top_energy, rd, join = within, largest = TRUE)
+
+# Clean table to provide summary stats
+# Want to know total capacity and energy per RD within each class
+RegDis_energy <- energy_rd %>%
+  select(NAME_2, Ci, Ei, DN) %>%
+  group_by(NAME_2) %>%
+  summarise(total_capacity_GW = sum(Ci)/1000000,
+            total_energy_TWh = sum(Ei)/1000000000)
+
+# Drop geometry to export
+RegDis_energy_df <- sf::st_drop_geometry(RegDis_energy) 
+
+write_csv(RegDis_energy_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Suitability Surfaces/Spreadsheets/RegDis_energy_summary.csv")
+
+# Compare Peace River against a top Southern District (e.g., "Okanagan-Similkameen" or "East Kootenay")
+diagnostic_check <- energy_rd %>%
+  sf::st_drop_geometry() %>%
+  group_by(NAME_2) %>%
+  summarise(
+    total_polygons_passed = n(),
+    avg_poly_area_acres   = mean(Area_acres),
+    assigned_GCR          = mean(GCR),
+    avg_pvout             = mean(pvout_mean),
+    total_capacity_GW     = sum(Ci)/1e6
+  ) %>%
+  arrange(desc(total_capacity_GW))
+
+print(diagnostic_check)
+
+# 1. Define a named lookup vector for your GCR values based on the classifier attribute
+
+gcr_lookup <- c(
+  "North"   = 0.22663,
+  "Central" = 0.26342,
+  "South"   = 0.31406) 
+
+# 2. Read in the master class layers - filtered for sites > 5 acres, assigned a lat of polygon centroid, 
+# and assigned a lat_zone (either North, Central, or South) - and cleaned PVOUT data
+
+cl4_mmu <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/cl4_mmu_lat.shp")
+cl5_mmu <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/cl5_mmu_lat.shp")
+pvout <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif")
+
+# 3. Process Class 4 and Class 5 using custom function 
+
+process_solar_sites <- function(sf_layer, pvout_raster) {
+  sf_layer %>%
+    # Dynamically assign the GCR based on the latitude band attribute
+    mutate(GCR = gcr_lookup[lat_zone]) %>%
+    # Calculate Installable Capacity (Ci)
+    mutate(Ci = Area_m2 * 0.23 * 0.724 * GCR) %>%
+    # Extract zonal mean pvout 
+    mutate(pvout_mean = exact_extract(pvout_raster, ., fun = "mean")) %>%
+    # Calculate Annual Energy Production (Ei)
+    mutate(Ei = Ci * pvout_mean)
+}
+
+# Run the pipeline for both classes
+class4_energy <- process_solar_sites(cl4_mmu, pvout)
+class5_energy <- process_solar_sites(cl5_mmu, pvout)
+
+# Aggregate for summary 
+
+# Total Capacity: convert kW to Megawatts (MW) for utility scale
+total_cap_cl4_MW <- sum(class4_energy$Ci, na.rm = TRUE) / 1000
+total_cap_cl5_MW <- sum(class5_energy$Ci, na.rm = TRUE) / 1000
+
+# Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)
+total_eng_cl4_TWh <- sum(class4_energy$Ei, na.rm = TRUE) / 1000000000
+total_eng_cl5_TWh <- sum(class5_energy$Ei, na.rm = TRUE) / 1000000000
+
+# Print final utility reports 
+cat("--- CLASS 4 RESULTS ---\n",
+    "Total Capacity:", round(total_cap_cl4_MW, 2), "MW\n",
+    "Annual Yield  :", round(total_eng_cl4_TWh, 2), "TWh/year\n\n")
+
+cat("--- CLASS 5 RESULTS ---\n",
+    "Total Capacity:", round(total_cap_cl5_MW, 2), "MW\n",
+    "Annual Yield  :", round(total_eng_cl5_TWh, 2), "TWh/year\n")
+mean(class4_energy$pvout_mean) 
+
+```
+
