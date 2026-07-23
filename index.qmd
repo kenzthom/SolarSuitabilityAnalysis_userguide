@@ -1175,7 +1175,7 @@ suitability_cols <- c("#696969","#FFFFCC","#FECC5C","#FD8D3C","#F03B20","#BD0026
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif"), col = suitability_cols)
 ```
 
-## Step 4: Quantify Geographical Potential Results 
+## Step 4: Geographical Potential Results 
 
 ```{r}
 #| message: false
@@ -1399,7 +1399,9 @@ Data source: [Global Solar Atlas](https://globalsolaratlas.info/download/canada)
 
 Calculating the technical potential of the most suitable areas provides insight into the provinces total resource potential. This section utilizes Potential Photovoltaic Output data in combination with energy yield assumptions to derive two key results: Total Installable Capacity and Total Annual Energy. 
 
-CODE NOT COMPLETE:
+## Step 1: Prepare Data
+
+First, isolate class 4 and 5 pixels from our final suitability raster - this way we are only deriving energy yield estimates from our most optimal land
 
 ```{r}
 #| message: false
@@ -1409,15 +1411,23 @@ CODE NOT COMPLETE:
 pvout <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif")
 
 # Isolate Class 4 & 5 
-class4 <- suitability_masked_v4
-class4[suitability_masked_v4 != 4] <- NA 
+class4 <- final_suitability
+class4[final_suitability != 4] <- NA 
 writeRaster(class4, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4.tif")
 
-class5 <- suitability_masked_v4
-class5[suitability_masked_v4 != 5] <- NA 
+class5 <- final_suitability
+class5[final_suitability != 5] <- NA 
 writeRaster(class5, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5.tif")
 
-# Polygonize in Q
+```
+
+Now, use a GIS GUI (ArcGIS Pro, QGIS) to transform each raster into a polygon layer. Once done, we will filter out sites smaller than 5 acres (minimum size threshold for a 1 MW installation)
+
+```{r}
+#| message: false
+#| eval: false 
+
+# Load in polygon layers made in a GIS GUI
 class4_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4_polys.shp")
 class5_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5_polys.shp")
 
@@ -1427,6 +1437,7 @@ class4_poly$Area_m2 <- as.numeric(sf::st_area(class4_poly))
 class4_poly$Area_acres <- class4_poly$Area_m2 / 4046.85642 
 class4_poly$Area_km2 <- class4_poly$Area_m2 / 1e6
 class4_mmu <- class4_poly[class4_poly$Area_acres > 5, ]
+
 # Total area of all sites:
 sum(class4_mmu$Area_km2)
 
@@ -1435,10 +1446,24 @@ class5_poly$Area_m2 <- as.numeric(sf::st_area(class5_poly))
 class5_poly$Area_acres <- class5_poly$Area_m2 / 4046.85642 
 class5_poly$Area_km2 <- class5_poly$Area_m2 / 1e6
 class5_mmu <- class5_poly[class5_poly$Area_acres > 5, ]
+
 # Total area of all sites:
 sum(class5_mmu$Area_km2)
+```
 
-# Add column of latitude of polygon centroid 
+## Step 2: Assign Ground Cover Ratio 
+
+Now we will assign each polygon a specific Ground Cover Ratio (GCR) value based on the part of the province it falls within. 
+
+Polygons in the northern latitudinal band (55.884 deg - 59.646 deg) are assigned a GCR of 0.22663; 
+Polygons in the central latitudinal band (52.122 deg - 55.884 deg) are assigned a GCR of 0.26342;
+Polygons in the southern latitudinal band (48.361 deg - 52.122 deg) are assigned a GCR of 0.31406.
+
+```{r}
+#| message: false
+#| eval: false 
+
+# Add column that holds the latitude of polygon centroid 
 # Class 4
 class4_mmu <- class4_mmu %>%
   mutate(latitude = st_coordinates(st_transform(st_centroid(geometry), 4326))[, "Y"])
@@ -1448,12 +1473,6 @@ class5_mmu <- class5_mmu %>%
   mutate(latitude = st_coordinates(st_transform(st_centroid(geometry), 4326))[, "Y"])
 
 # Add column of latitude zone based on the band it falls within 
-
-# Latitude bands:
-# North: 55.884 deg - 59.646 deg
-# Central: 52.122 deg - 55.884 deg 
-# South: 48.361 deg - 52.122 deg 
-
 class4_mmu <- class4_mmu %>%
   mutate( 
     lat_zone = case_when(
@@ -1468,17 +1487,31 @@ class5_mmu <- class5_mmu %>%
       latitude < 55.884  ~ "Central", 
       TRUE               ~ "North"))   
 
-# 8. Energy yield calculations ----
-
-# Define a named lookup vector for your GCR values based on the classifier attribute
-
+# Define a named lookup vector for the Ground Cover Ratio values based on the latitude attribute
 gcr_lookup <- c(
   "North"   = 0.22663,
   "Central" = 0.26342,
   "South"   = 0.31406)
+```
+
+## Step 3: Calculate Resource Potential 
+
+Finally, we will calculate the resource potential of all class 4 and 5 sites using a custom function. 
+
+Installable Capacity is calculated using five variables: 
+	1. the area of each site; 
+	2. a panel efficiency of 23% 
+	3. latitude-dependent Ground Cover Ratios, which account for the spacing needed between panel rows to prevent self-shading; 
+	4. A packing density ratio, which accounts for the difference between the panel footprint and the full land requirement of each site;
+	5. and a standard test condition of 1kWh per square meter
+
+Annual Energy is calculated by multiplying the Installable Capacity by the average PVOUT of the site.
+
+```{r}
+#| message: false
+#| eval: false 
 
 # Process Class 4 and Class 5 using custom function 
-
 process_solar_sites <- function(sf_layer, pvout_raster) {
   sf_layer %>%
     # Dynamically assign the GCR based on the latitude band attribute
@@ -1494,6 +1527,13 @@ process_solar_sites <- function(sf_layer, pvout_raster) {
 # Run the function for both classes
 class4_energy <- process_solar_sites(class4_mmu, pvout)
 class5_energy <- process_solar_sites(class5_mmu, pvout)
+```
+
+## Step 4: Technical Potential Results
+
+```{r}
+#| message: false
+#| eval: false 
 
 # Aggregate for summary 
 
@@ -1516,8 +1556,13 @@ cat("--- CLASS 5 RESULTS ---\n",
 
 mean(class4_energy$pvout_mean) 
 mean(class5_energy$pvout_mean)
+```
 
-# 9. Extract energy per district ----
+Determine energy yield per regional district
+
+```{r}
+#| message: false
+#| eval: false 
 
 # Join top two suitability classes into one
 top_energy <- rbind(class4_energy, class5_energy)
@@ -1537,73 +1582,5 @@ RegDis_energy <- energy_rd %>%
 RegDis_energy_df <- sf::st_drop_geometry(RegDis_energy) 
 
 write_csv(RegDis_energy_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Suitability Surfaces/Spreadsheets/RegDis_energy_summary.csv")
-
-# Compare Peace River against a top Southern District (e.g., "Okanagan-Similkameen" or "East Kootenay")
-diagnostic_check <- energy_rd %>%
-  sf::st_drop_geometry() %>%
-  group_by(NAME_2) %>%
-  summarise(
-    total_polygons_passed = n(),
-    avg_poly_area_acres   = mean(Area_acres),
-    assigned_GCR          = mean(GCR),
-    avg_pvout             = mean(pvout_mean),
-    total_capacity_GW     = sum(Ci)/1e6
-  ) %>%
-  arrange(desc(total_capacity_GW))
-
-print(diagnostic_check)
-
-# 1. Define a named lookup vector for your GCR values based on the classifier attribute
-
-gcr_lookup <- c(
-  "North"   = 0.22663,
-  "Central" = 0.26342,
-  "South"   = 0.31406) 
-
-# 2. Read in the master class layers - filtered for sites > 5 acres, assigned a lat of polygon centroid, 
-# and assigned a lat_zone (either North, Central, or South) - and cleaned PVOUT data
-
-cl4_mmu <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/cl4_mmu_lat.shp")
-cl5_mmu <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/cl5_mmu_lat.shp")
-pvout <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif")
-
-# 3. Process Class 4 and Class 5 using custom function 
-
-process_solar_sites <- function(sf_layer, pvout_raster) {
-  sf_layer %>%
-    # Dynamically assign the GCR based on the latitude band attribute
-    mutate(GCR = gcr_lookup[lat_zone]) %>%
-    # Calculate Installable Capacity (Ci)
-    mutate(Ci = Area_m2 * 0.23 * 0.724 * GCR) %>%
-    # Extract zonal mean pvout 
-    mutate(pvout_mean = exact_extract(pvout_raster, ., fun = "mean")) %>%
-    # Calculate Annual Energy Production (Ei)
-    mutate(Ei = Ci * pvout_mean)
-}
-
-# Run the pipeline for both classes
-class4_energy <- process_solar_sites(cl4_mmu, pvout)
-class5_energy <- process_solar_sites(cl5_mmu, pvout)
-
-# Aggregate for summary 
-
-# Total Capacity: convert kW to Megawatts (MW) for utility scale
-total_cap_cl4_MW <- sum(class4_energy$Ci, na.rm = TRUE) / 1000
-total_cap_cl5_MW <- sum(class5_energy$Ci, na.rm = TRUE) / 1000
-
-# Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)
-total_eng_cl4_TWh <- sum(class4_energy$Ei, na.rm = TRUE) / 1000000000
-total_eng_cl5_TWh <- sum(class5_energy$Ei, na.rm = TRUE) / 1000000000
-
-# Print final utility reports 
-cat("--- CLASS 4 RESULTS ---\n",
-    "Total Capacity:", round(total_cap_cl4_MW, 2), "MW\n",
-    "Annual Yield  :", round(total_eng_cl4_TWh, 2), "TWh/year\n\n")
-
-cat("--- CLASS 5 RESULTS ---\n",
-    "Total Capacity:", round(total_cap_cl5_MW, 2), "MW\n",
-    "Annual Yield  :", round(total_eng_cl5_TWh, 2), "TWh/year\n")
-mean(class4_energy$pvout_mean) 
-
 ```
 

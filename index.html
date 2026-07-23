@@ -161,9 +161,15 @@ background-size: cover;
   </ul></li>
   <li><a href="#step-2-analytic-hierarchy-process" id="toc-step-2-analytic-hierarchy-process" class="nav-link" data-scroll-target="#step-2-analytic-hierarchy-process">Step 2: Analytic Hierarchy Process</a></li>
   <li><a href="#step-3-weighted-sum-overlay" id="toc-step-3-weighted-sum-overlay" class="nav-link" data-scroll-target="#step-3-weighted-sum-overlay">Step 3: Weighted Sum Overlay</a></li>
-  <li><a href="#step-4-quantify-geographical-potential-results" id="toc-step-4-quantify-geographical-potential-results" class="nav-link" data-scroll-target="#step-4-quantify-geographical-potential-results">Step 4: Quantify Geographical Potential Results</a></li>
+  <li><a href="#step-4-geographical-potential-results" id="toc-step-4-geographical-potential-results" class="nav-link" data-scroll-target="#step-4-geographical-potential-results">Step 4: Geographical Potential Results</a></li>
   </ul></li>
-  <li><a href="#stage-2-technical-potential" id="toc-stage-2-technical-potential" class="nav-link" data-scroll-target="#stage-2-technical-potential">Stage 2: Technical Potential</a></li>
+  <li><a href="#stage-2-technical-potential" id="toc-stage-2-technical-potential" class="nav-link" data-scroll-target="#stage-2-technical-potential">Stage 2: Technical Potential</a>
+  <ul>
+  <li><a href="#step-1-prepare-data" id="toc-step-1-prepare-data" class="nav-link" data-scroll-target="#step-1-prepare-data">Step 1: Prepare Data</a></li>
+  <li><a href="#step-2-assign-ground-cover-ratio" id="toc-step-2-assign-ground-cover-ratio" class="nav-link" data-scroll-target="#step-2-assign-ground-cover-ratio">Step 2: Assign Ground Cover Ratio</a></li>
+  <li><a href="#step-3-calculate-resource-potential" id="toc-step-3-calculate-resource-potential" class="nav-link" data-scroll-target="#step-3-calculate-resource-potential">Step 3: Calculate Resource Potential</a></li>
+  <li><a href="#step-4-technical-potential-results" id="toc-step-4-technical-potential-results" class="nav-link" data-scroll-target="#step-4-technical-potential-results">Step 4: Technical Potential Results</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -185,7 +191,7 @@ background-size: cover;
 <p>This document provides a detailed guide of the analysis, including all code used to derive results.</p>
 <p><a href="https://www.uvic.ca/acet/projects/bc-renewable-energy-mapping/index.php">Click for more info</a></p>
 <p><a href="https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/MZYJFF">Click for first-draft publication</a></p>
-<p><a href="tbd">Click for raw data download</a></p>
+<p><a href="tbd">Click for raw data download - coming soon</a></p>
 <p><strong>NOTE:</strong> You will need to change each file path to a folder on your computer!</p>
 </section>
 <section id="set-up" class="level1">
@@ -322,7 +328,7 @@ background-size: cover;
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Visualize Criteria 1 - GTI</figcaption>
+<figcaption>Criteria 1 - GTI</figcaption>
 </figure>
 </div>
 </div>
@@ -436,7 +442,7 @@ background-size: cover;
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Visualize Criteria 2 - Ground Slope</figcaption>
+<figcaption>Criteria 2 - Ground Slope</figcaption>
 </figure>
 </div>
 </div>
@@ -557,7 +563,7 @@ background-size: cover;
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Visualize Criteria 3 - Ground Aspect</figcaption>
+<figcaption>Criteria 3 - Ground Aspect</figcaption>
 </figure>
 </div>
 </div>
@@ -608,7 +614,7 @@ background-size: cover;
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Visualize Criteria 4 - Proximity to Substations</figcaption>
+<figcaption>Criteria 4 - Proximity to Substations</figcaption>
 </figure>
 </div>
 </div>
@@ -659,7 +665,7 @@ background-size: cover;
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Visualize Criteria 5 - Proximity to Demand Centers</figcaption>
+<figcaption>Criteria 5 - Proximity to Demand Centers</figcaption>
 </figure>
 </div>
 </div>
@@ -710,7 +716,7 @@ background-size: cover;
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="index_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
-<figcaption>Visualize Criteria 6 - Proximity to Major Roads</figcaption>
+<figcaption>Criteria 6 - Proximity to Major Roads</figcaption>
 </figure>
 </div>
 </div>
@@ -1275,8 +1281,8 @@ background-size: cover;
 </div>
 </div>
 </section>
-<section id="step-4-quantify-geographical-potential-results" class="level2">
-<h2 class="anchored" data-anchor-id="step-4-quantify-geographical-potential-results">Step 4: Quantify Geographical Potential Results</h2>
+<section id="step-4-geographical-potential-results" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-geographical-potential-results">Step 4: Geographical Potential Results</h2>
 <p>Key result 1: BC’s total land base by suitability class:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get frequency table and calculate pixel area (in km²) </span></span>
@@ -1403,208 +1409,155 @@ background-size: cover;
 <h1>Stage 2: Technical Potential</h1>
 <p>Data source: <a href="https://globalsolaratlas.info/download/canada">Global Solar Atlas</a></p>
 <p>Calculating the technical potential of the most suitable areas provides insight into the provinces total resource potential. This section utilizes Potential Photovoltaic Output data in combination with energy yield assumptions to derive two key results: Total Installable Capacity and Total Annual Energy.</p>
-<p>CODE NOT COMPLETE:</p>
+<section id="step-1-prepare-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-prepare-data">Step 1: Prepare Data</h2>
+<p>First, isolate class 4 and 5 pixels from our final suitability raster - this way we are only deriving energy yield estimates from our most optimal land</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in pvout data</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>pvout <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif"</span>)</span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Isolate Class 4 &amp; 5 </span></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>class4 <span class="ot">&lt;-</span> suitability_masked_v4</span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>class4[suitability_masked_v4 <span class="sc">!=</span> <span class="dv">4</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span> </span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>class4 <span class="ot">&lt;-</span> final_suitability</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>class4[final_suitability <span class="sc">!=</span> <span class="dv">4</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span> </span>
 <span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(class4, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4.tif"</span>)</span>
 <span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>class5 <span class="ot">&lt;-</span> suitability_masked_v4</span>
-<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>class5[suitability_masked_v4 <span class="sc">!=</span> <span class="dv">5</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span> </span>
-<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(class5, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5.tif"</span>)</span>
-<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Polygonize in Q</span></span>
-<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>class4_poly <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4_polys.shp"</span>)</span>
-<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>class5_poly <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5_polys.shp"</span>)</span>
-<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out areas smaller than 5 acre footprint </span></span>
-<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 4</span></span>
-<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_m2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(sf<span class="sc">::</span><span class="fu">st_area</span>(class4_poly))</span>
-<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_acres <span class="ot">&lt;-</span> class4_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">4046.85642</span> </span>
-<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_km2 <span class="ot">&lt;-</span> class4_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">1e6</span></span>
-<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_poly[class4_poly<span class="sc">$</span>Area_acres <span class="sc">&gt;</span> <span class="dv">5</span>, ]</span>
-<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Total area of all sites:</span></span>
-<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(class4_mmu<span class="sc">$</span>Area_km2)</span>
-<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 5</span></span>
-<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_m2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(sf<span class="sc">::</span><span class="fu">st_area</span>(class5_poly))</span>
-<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_acres <span class="ot">&lt;-</span> class5_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">4046.85642</span> </span>
-<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_km2 <span class="ot">&lt;-</span> class5_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">1e6</span></span>
-<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_poly[class5_poly<span class="sc">$</span>Area_acres <span class="sc">&gt;</span> <span class="dv">5</span>, ]</span>
-<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Total area of all sites:</span></span>
-<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(class5_mmu<span class="sc">$</span>Area_km2)</span>
-<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Add column of latitude of polygon centroid </span></span>
-<span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 4</span></span>
-<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_mmu <span class="sc">%&gt;%</span></span>
-<span id="cb30-37"><a href="#cb30-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">latitude =</span> <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(<span class="fu">st_centroid</span>(geometry), <span class="dv">4326</span>))[, <span class="st">"Y"</span>])</span>
-<span id="cb30-38"><a href="#cb30-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-39"><a href="#cb30-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 5</span></span>
-<span id="cb30-40"><a href="#cb30-40" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_mmu <span class="sc">%&gt;%</span></span>
-<span id="cb30-41"><a href="#cb30-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">latitude =</span> <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(<span class="fu">st_centroid</span>(geometry), <span class="dv">4326</span>))[, <span class="st">"Y"</span>])</span>
-<span id="cb30-42"><a href="#cb30-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-43"><a href="#cb30-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Add column of latitude zone based on the band it falls within </span></span>
-<span id="cb30-44"><a href="#cb30-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-45"><a href="#cb30-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Latitude bands:</span></span>
-<span id="cb30-46"><a href="#cb30-46" aria-hidden="true" tabindex="-1"></a><span class="co"># North: 55.884 deg - 59.646 deg</span></span>
-<span id="cb30-47"><a href="#cb30-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Central: 52.122 deg - 55.884 deg </span></span>
-<span id="cb30-48"><a href="#cb30-48" aria-hidden="true" tabindex="-1"></a><span class="co"># South: 48.361 deg - 52.122 deg </span></span>
-<span id="cb30-49"><a href="#cb30-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-50"><a href="#cb30-50" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_mmu <span class="sc">%&gt;%</span></span>
-<span id="cb30-51"><a href="#cb30-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( </span>
-<span id="cb30-52"><a href="#cb30-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">lat_zone =</span> <span class="fu">case_when</span>(</span>
-<span id="cb30-53"><a href="#cb30-53" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">52.122</span>  <span class="sc">~</span> <span class="st">"South"</span>,</span>
-<span id="cb30-54"><a href="#cb30-54" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">55.884</span>  <span class="sc">~</span> <span class="st">"Central"</span>, <span class="co"># Anything between 52.122 and 55.884</span></span>
-<span id="cb30-55"><a href="#cb30-55" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>               <span class="sc">~</span> <span class="st">"North"</span>))   <span class="co"># Everything else (55.884 and above)</span></span>
-<span id="cb30-56"><a href="#cb30-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-57"><a href="#cb30-57" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_mmu <span class="sc">%&gt;%</span></span>
-<span id="cb30-58"><a href="#cb30-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( </span>
-<span id="cb30-59"><a href="#cb30-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">lat_zone =</span> <span class="fu">case_when</span>(</span>
-<span id="cb30-60"><a href="#cb30-60" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">52.122</span>  <span class="sc">~</span> <span class="st">"South"</span>,</span>
-<span id="cb30-61"><a href="#cb30-61" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">55.884</span>  <span class="sc">~</span> <span class="st">"Central"</span>, </span>
-<span id="cb30-62"><a href="#cb30-62" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>               <span class="sc">~</span> <span class="st">"North"</span>))   </span>
-<span id="cb30-63"><a href="#cb30-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-64"><a href="#cb30-64" aria-hidden="true" tabindex="-1"></a><span class="co"># 8. Energy yield calculations ----</span></span>
-<span id="cb30-65"><a href="#cb30-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-66"><a href="#cb30-66" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a named lookup vector for your GCR values based on the classifier attribute</span></span>
-<span id="cb30-67"><a href="#cb30-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-68"><a href="#cb30-68" aria-hidden="true" tabindex="-1"></a>gcr_lookup <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb30-69"><a href="#cb30-69" aria-hidden="true" tabindex="-1"></a>  <span class="st">"North"</span>   <span class="ot">=</span> <span class="fl">0.22663</span>,</span>
-<span id="cb30-70"><a href="#cb30-70" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Central"</span> <span class="ot">=</span> <span class="fl">0.26342</span>,</span>
-<span id="cb30-71"><a href="#cb30-71" aria-hidden="true" tabindex="-1"></a>  <span class="st">"South"</span>   <span class="ot">=</span> <span class="fl">0.31406</span>)</span>
-<span id="cb30-72"><a href="#cb30-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-73"><a href="#cb30-73" aria-hidden="true" tabindex="-1"></a><span class="co"># Process Class 4 and Class 5 using custom function </span></span>
-<span id="cb30-74"><a href="#cb30-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-75"><a href="#cb30-75" aria-hidden="true" tabindex="-1"></a>process_solar_sites <span class="ot">&lt;-</span> <span class="cf">function</span>(sf_layer, pvout_raster) {</span>
-<span id="cb30-76"><a href="#cb30-76" aria-hidden="true" tabindex="-1"></a>  sf_layer <span class="sc">%&gt;%</span></span>
-<span id="cb30-77"><a href="#cb30-77" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Dynamically assign the GCR based on the latitude band attribute</span></span>
-<span id="cb30-78"><a href="#cb30-78" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">GCR =</span> gcr_lookup[lat_zone]) <span class="sc">%&gt;%</span></span>
-<span id="cb30-79"><a href="#cb30-79" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Installable Capacity (Ci)</span></span>
-<span id="cb30-80"><a href="#cb30-80" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ci =</span> Area_m2 <span class="sc">*</span> <span class="fl">0.23</span> <span class="sc">*</span> <span class="fl">0.724</span> <span class="sc">*</span> GCR) <span class="sc">%&gt;%</span></span>
-<span id="cb30-81"><a href="#cb30-81" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract zonal mean pvout </span></span>
-<span id="cb30-82"><a href="#cb30-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pvout_mean =</span> <span class="fu">exact_extract</span>(pvout_raster, ., <span class="at">fun =</span> <span class="st">"mean"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb30-83"><a href="#cb30-83" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Annual Energy Production (Ei)</span></span>
-<span id="cb30-84"><a href="#cb30-84" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ei =</span> Ci <span class="sc">*</span> pvout_mean)</span>
-<span id="cb30-85"><a href="#cb30-85" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb30-86"><a href="#cb30-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-87"><a href="#cb30-87" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the function for both classes</span></span>
-<span id="cb30-88"><a href="#cb30-88" aria-hidden="true" tabindex="-1"></a>class4_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(class4_mmu, pvout)</span>
-<span id="cb30-89"><a href="#cb30-89" aria-hidden="true" tabindex="-1"></a>class5_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(class5_mmu, pvout)</span>
-<span id="cb30-90"><a href="#cb30-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-91"><a href="#cb30-91" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate for summary </span></span>
-<span id="cb30-92"><a href="#cb30-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-93"><a href="#cb30-93" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Capacity: convert kW to Megawatts (GW) for utility scale</span></span>
-<span id="cb30-94"><a href="#cb30-94" aria-hidden="true" tabindex="-1"></a>total_cap_cl4_GW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000</span></span>
-<span id="cb30-95"><a href="#cb30-95" aria-hidden="true" tabindex="-1"></a>total_cap_cl5_GW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000</span></span>
-<span id="cb30-96"><a href="#cb30-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-97"><a href="#cb30-97" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)</span></span>
-<span id="cb30-98"><a href="#cb30-98" aria-hidden="true" tabindex="-1"></a>total_eng_cl4_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
-<span id="cb30-99"><a href="#cb30-99" aria-hidden="true" tabindex="-1"></a>total_eng_cl5_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
-<span id="cb30-100"><a href="#cb30-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-101"><a href="#cb30-101" aria-hidden="true" tabindex="-1"></a><span class="co"># Print final utility reports </span></span>
-<span id="cb30-102"><a href="#cb30-102" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 4 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb30-103"><a href="#cb30-103" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl4_GW, <span class="dv">2</span>), <span class="st">"GW</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb30-104"><a href="#cb30-104" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl4_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb30-105"><a href="#cb30-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-106"><a href="#cb30-106" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 5 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb30-107"><a href="#cb30-107" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl5_GW, <span class="dv">2</span>), <span class="st">"GW</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb30-108"><a href="#cb30-108" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl5_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb30-109"><a href="#cb30-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-110"><a href="#cb30-110" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(class4_energy<span class="sc">$</span>pvout_mean) </span>
-<span id="cb30-111"><a href="#cb30-111" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(class5_energy<span class="sc">$</span>pvout_mean)</span>
-<span id="cb30-112"><a href="#cb30-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-113"><a href="#cb30-113" aria-hidden="true" tabindex="-1"></a><span class="co"># 9. Extract energy per district ----</span></span>
-<span id="cb30-114"><a href="#cb30-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-115"><a href="#cb30-115" aria-hidden="true" tabindex="-1"></a><span class="co"># Join top two suitability classes into one</span></span>
-<span id="cb30-116"><a href="#cb30-116" aria-hidden="true" tabindex="-1"></a>top_energy <span class="ot">&lt;-</span> <span class="fu">rbind</span>(class4_energy, class5_energy)</span>
-<span id="cb30-117"><a href="#cb30-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-118"><a href="#cb30-118" aria-hidden="true" tabindex="-1"></a><span class="co"># Intersect regional district layer with energy </span></span>
-<span id="cb30-119"><a href="#cb30-119" aria-hidden="true" tabindex="-1"></a>energy_rd <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_join</span>(top_energy, rd, <span class="at">join =</span> within, <span class="at">largest =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb30-120"><a href="#cb30-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-121"><a href="#cb30-121" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean table to provide summary stats</span></span>
-<span id="cb30-122"><a href="#cb30-122" aria-hidden="true" tabindex="-1"></a><span class="co"># Want to know total capacity and energy per RD within each class</span></span>
-<span id="cb30-123"><a href="#cb30-123" aria-hidden="true" tabindex="-1"></a>RegDis_energy <span class="ot">&lt;-</span> energy_rd <span class="sc">%&gt;%</span></span>
-<span id="cb30-124"><a href="#cb30-124" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(NAME_2, Ci, Ei, DN) <span class="sc">%&gt;%</span></span>
-<span id="cb30-125"><a href="#cb30-125" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(NAME_2) <span class="sc">%&gt;%</span></span>
-<span id="cb30-126"><a href="#cb30-126" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">total_capacity_GW =</span> <span class="fu">sum</span>(Ci)<span class="sc">/</span><span class="dv">1000000</span>,</span>
-<span id="cb30-127"><a href="#cb30-127" aria-hidden="true" tabindex="-1"></a>            <span class="at">total_energy_TWh =</span> <span class="fu">sum</span>(Ei)<span class="sc">/</span><span class="dv">1000000000</span>)</span>
-<span id="cb30-128"><a href="#cb30-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-129"><a href="#cb30-129" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop geometry to export</span></span>
-<span id="cb30-130"><a href="#cb30-130" aria-hidden="true" tabindex="-1"></a>RegDis_energy_df <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_drop_geometry</span>(RegDis_energy) </span>
-<span id="cb30-131"><a href="#cb30-131" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-132"><a href="#cb30-132" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(RegDis_energy_df, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Suitability Surfaces/Spreadsheets/RegDis_energy_summary.csv"</span>)</span>
-<span id="cb30-133"><a href="#cb30-133" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-134"><a href="#cb30-134" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare Peace River against a top Southern District (e.g., "Okanagan-Similkameen" or "East Kootenay")</span></span>
-<span id="cb30-135"><a href="#cb30-135" aria-hidden="true" tabindex="-1"></a>diagnostic_check <span class="ot">&lt;-</span> energy_rd <span class="sc">%&gt;%</span></span>
-<span id="cb30-136"><a href="#cb30-136" aria-hidden="true" tabindex="-1"></a>  sf<span class="sc">::</span><span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb30-137"><a href="#cb30-137" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(NAME_2) <span class="sc">%&gt;%</span></span>
-<span id="cb30-138"><a href="#cb30-138" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb30-139"><a href="#cb30-139" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_polygons_passed =</span> <span class="fu">n</span>(),</span>
-<span id="cb30-140"><a href="#cb30-140" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_poly_area_acres   =</span> <span class="fu">mean</span>(Area_acres),</span>
-<span id="cb30-141"><a href="#cb30-141" aria-hidden="true" tabindex="-1"></a>    <span class="at">assigned_GCR          =</span> <span class="fu">mean</span>(GCR),</span>
-<span id="cb30-142"><a href="#cb30-142" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_pvout             =</span> <span class="fu">mean</span>(pvout_mean),</span>
-<span id="cb30-143"><a href="#cb30-143" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_capacity_GW     =</span> <span class="fu">sum</span>(Ci)<span class="sc">/</span><span class="fl">1e6</span></span>
-<span id="cb30-144"><a href="#cb30-144" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb30-145"><a href="#cb30-145" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(total_capacity_GW))</span>
-<span id="cb30-146"><a href="#cb30-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-147"><a href="#cb30-147" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(diagnostic_check)</span>
-<span id="cb30-148"><a href="#cb30-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-149"><a href="#cb30-149" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Define a named lookup vector for your GCR values based on the classifier attribute</span></span>
-<span id="cb30-150"><a href="#cb30-150" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-151"><a href="#cb30-151" aria-hidden="true" tabindex="-1"></a>gcr_lookup <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb30-152"><a href="#cb30-152" aria-hidden="true" tabindex="-1"></a>  <span class="st">"North"</span>   <span class="ot">=</span> <span class="fl">0.22663</span>,</span>
-<span id="cb30-153"><a href="#cb30-153" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Central"</span> <span class="ot">=</span> <span class="fl">0.26342</span>,</span>
-<span id="cb30-154"><a href="#cb30-154" aria-hidden="true" tabindex="-1"></a>  <span class="st">"South"</span>   <span class="ot">=</span> <span class="fl">0.31406</span>) </span>
-<span id="cb30-155"><a href="#cb30-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-156"><a href="#cb30-156" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Read in the master class layers - filtered for sites &gt; 5 acres, assigned a lat of polygon centroid, </span></span>
-<span id="cb30-157"><a href="#cb30-157" aria-hidden="true" tabindex="-1"></a><span class="co"># and assigned a lat_zone (either North, Central, or South) - and cleaned PVOUT data</span></span>
-<span id="cb30-158"><a href="#cb30-158" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-159"><a href="#cb30-159" aria-hidden="true" tabindex="-1"></a>cl4_mmu <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/cl4_mmu_lat.shp"</span>)</span>
-<span id="cb30-160"><a href="#cb30-160" aria-hidden="true" tabindex="-1"></a>cl5_mmu <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/cl5_mmu_lat.shp"</span>)</span>
-<span id="cb30-161"><a href="#cb30-161" aria-hidden="true" tabindex="-1"></a>pvout <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif"</span>)</span>
-<span id="cb30-162"><a href="#cb30-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-163"><a href="#cb30-163" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Process Class 4 and Class 5 using custom function </span></span>
-<span id="cb30-164"><a href="#cb30-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-165"><a href="#cb30-165" aria-hidden="true" tabindex="-1"></a>process_solar_sites <span class="ot">&lt;-</span> <span class="cf">function</span>(sf_layer, pvout_raster) {</span>
-<span id="cb30-166"><a href="#cb30-166" aria-hidden="true" tabindex="-1"></a>  sf_layer <span class="sc">%&gt;%</span></span>
-<span id="cb30-167"><a href="#cb30-167" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Dynamically assign the GCR based on the latitude band attribute</span></span>
-<span id="cb30-168"><a href="#cb30-168" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">GCR =</span> gcr_lookup[lat_zone]) <span class="sc">%&gt;%</span></span>
-<span id="cb30-169"><a href="#cb30-169" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Installable Capacity (Ci)</span></span>
-<span id="cb30-170"><a href="#cb30-170" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ci =</span> Area_m2 <span class="sc">*</span> <span class="fl">0.23</span> <span class="sc">*</span> <span class="fl">0.724</span> <span class="sc">*</span> GCR) <span class="sc">%&gt;%</span></span>
-<span id="cb30-171"><a href="#cb30-171" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract zonal mean pvout </span></span>
-<span id="cb30-172"><a href="#cb30-172" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pvout_mean =</span> <span class="fu">exact_extract</span>(pvout_raster, ., <span class="at">fun =</span> <span class="st">"mean"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb30-173"><a href="#cb30-173" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Annual Energy Production (Ei)</span></span>
-<span id="cb30-174"><a href="#cb30-174" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ei =</span> Ci <span class="sc">*</span> pvout_mean)</span>
-<span id="cb30-175"><a href="#cb30-175" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb30-176"><a href="#cb30-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-177"><a href="#cb30-177" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the pipeline for both classes</span></span>
-<span id="cb30-178"><a href="#cb30-178" aria-hidden="true" tabindex="-1"></a>class4_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(cl4_mmu, pvout)</span>
-<span id="cb30-179"><a href="#cb30-179" aria-hidden="true" tabindex="-1"></a>class5_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(cl5_mmu, pvout)</span>
-<span id="cb30-180"><a href="#cb30-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-181"><a href="#cb30-181" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate for summary </span></span>
-<span id="cb30-182"><a href="#cb30-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-183"><a href="#cb30-183" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Capacity: convert kW to Megawatts (MW) for utility scale</span></span>
-<span id="cb30-184"><a href="#cb30-184" aria-hidden="true" tabindex="-1"></a>total_cap_cl4_MW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000</span></span>
-<span id="cb30-185"><a href="#cb30-185" aria-hidden="true" tabindex="-1"></a>total_cap_cl5_MW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000</span></span>
-<span id="cb30-186"><a href="#cb30-186" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-187"><a href="#cb30-187" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)</span></span>
-<span id="cb30-188"><a href="#cb30-188" aria-hidden="true" tabindex="-1"></a>total_eng_cl4_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
-<span id="cb30-189"><a href="#cb30-189" aria-hidden="true" tabindex="-1"></a>total_eng_cl5_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
-<span id="cb30-190"><a href="#cb30-190" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-191"><a href="#cb30-191" aria-hidden="true" tabindex="-1"></a><span class="co"># Print final utility reports </span></span>
-<span id="cb30-192"><a href="#cb30-192" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 4 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb30-193"><a href="#cb30-193" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl4_MW, <span class="dv">2</span>), <span class="st">"MW</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb30-194"><a href="#cb30-194" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl4_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb30-195"><a href="#cb30-195" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-196"><a href="#cb30-196" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 5 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb30-197"><a href="#cb30-197" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl5_MW, <span class="dv">2</span>), <span class="st">"MW</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb30-198"><a href="#cb30-198" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl5_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb30-199"><a href="#cb30-199" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(class4_energy<span class="sc">$</span>pvout_mean) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>class5 <span class="ot">&lt;-</span> final_suitability</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>class5[final_suitability <span class="sc">!=</span> <span class="dv">5</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span> </span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="fu">writeRaster</span>(class5, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5.tif"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>Now, use a GIS GUI (ArcGIS Pro, QGIS) to transform each raster into a polygon layer. Once done, we will filter out sites smaller than 5 acres (minimum size threshold for a 1 MW installation)</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load in polygon layers made in a GIS GUI</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>class4_poly <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4_polys.shp"</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>class5_poly <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5_polys.shp"</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out areas smaller than 5 acre footprint </span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 4</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_m2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(sf<span class="sc">::</span><span class="fu">st_area</span>(class4_poly))</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_acres <span class="ot">&lt;-</span> class4_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">4046.85642</span> </span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>class4_poly<span class="sc">$</span>Area_km2 <span class="ot">&lt;-</span> class4_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">1e6</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_poly[class4_poly<span class="sc">$</span>Area_acres <span class="sc">&gt;</span> <span class="dv">5</span>, ]</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Total area of all sites:</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(class4_mmu<span class="sc">$</span>Area_km2)</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 5</span></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_m2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(sf<span class="sc">::</span><span class="fu">st_area</span>(class5_poly))</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_acres <span class="ot">&lt;-</span> class5_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">4046.85642</span> </span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>class5_poly<span class="sc">$</span>Area_km2 <span class="ot">&lt;-</span> class5_poly<span class="sc">$</span>Area_m2 <span class="sc">/</span> <span class="fl">1e6</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_poly[class5_poly<span class="sc">$</span>Area_acres <span class="sc">&gt;</span> <span class="dv">5</span>, ]</span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Total area of all sites:</span></span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(class5_mmu<span class="sc">$</span>Area_km2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="step-2-assign-ground-cover-ratio" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-assign-ground-cover-ratio">Step 2: Assign Ground Cover Ratio</h2>
+<p>Now we will assign each polygon a specific Ground Cover Ratio (GCR) value based on the part of the province it falls within.</p>
+<p>Polygons in the northern latitudinal band (55.884 deg - 59.646 deg) are assigned a GCR of 0.22663; Polygons in the central latitudinal band (52.122 deg - 55.884 deg) are assigned a GCR of 0.26342; Polygons in the southern latitudinal band (48.361 deg - 52.122 deg) are assigned a GCR of 0.31406.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add column that holds the latitude of polygon centroid </span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 4</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_mmu <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">latitude =</span> <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(<span class="fu">st_centroid</span>(geometry), <span class="dv">4326</span>))[, <span class="st">"Y"</span>])</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Class 5</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_mmu <span class="sc">%&gt;%</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">latitude =</span> <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(<span class="fu">st_centroid</span>(geometry), <span class="dv">4326</span>))[, <span class="st">"Y"</span>])</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Add column of latitude zone based on the band it falls within </span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>class4_mmu <span class="ot">&lt;-</span> class4_mmu <span class="sc">%&gt;%</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( </span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">lat_zone =</span> <span class="fu">case_when</span>(</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">52.122</span>  <span class="sc">~</span> <span class="st">"South"</span>,</span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">55.884</span>  <span class="sc">~</span> <span class="st">"Central"</span>, <span class="co"># Anything between 52.122 and 55.884</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>               <span class="sc">~</span> <span class="st">"North"</span>))   <span class="co"># Everything else (55.884 and above)</span></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>class5_mmu <span class="ot">&lt;-</span> class5_mmu <span class="sc">%&gt;%</span></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( </span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">lat_zone =</span> <span class="fu">case_when</span>(</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">52.122</span>  <span class="sc">~</span> <span class="st">"South"</span>,</span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>      latitude <span class="sc">&lt;</span> <span class="fl">55.884</span>  <span class="sc">~</span> <span class="st">"Central"</span>, </span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>               <span class="sc">~</span> <span class="st">"North"</span>))   </span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a named lookup vector for the Ground Cover Ratio values based on the latitude attribute</span></span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>gcr_lookup <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">"North"</span>   <span class="ot">=</span> <span class="fl">0.22663</span>,</span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Central"</span> <span class="ot">=</span> <span class="fl">0.26342</span>,</span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">"South"</span>   <span class="ot">=</span> <span class="fl">0.31406</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="step-3-calculate-resource-potential" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-calculate-resource-potential">Step 3: Calculate Resource Potential</h2>
+<p>Finally, we will calculate the resource potential of all class 4 and 5 sites using a custom function.</p>
+<p>Installable Capacity is calculated using five variables: 1. the area of each site; 2. a panel efficiency of 23% 3. latitude-dependent Ground Cover Ratios, which account for the spacing needed between panel rows to prevent self-shading; 4. A packing density ratio, which accounts for the difference between the panel footprint and the full land requirement of each site; 5. and a standard test condition of 1kWh per square meter</p>
+<p>Annual Energy is calculated by multiplying the Installable Capacity by the average PVOUT of the site.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Process Class 4 and Class 5 using custom function </span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>process_solar_sites <span class="ot">&lt;-</span> <span class="cf">function</span>(sf_layer, pvout_raster) {</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  sf_layer <span class="sc">%&gt;%</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Dynamically assign the GCR based on the latitude band attribute</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">GCR =</span> gcr_lookup[lat_zone]) <span class="sc">%&gt;%</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Installable Capacity (Ci)</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ci =</span> Area_m2 <span class="sc">*</span> <span class="fl">0.23</span> <span class="sc">*</span> <span class="fl">0.724</span> <span class="sc">*</span> GCR) <span class="sc">%&gt;%</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract zonal mean pvout </span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pvout_mean =</span> <span class="fu">exact_extract</span>(pvout_raster, ., <span class="at">fun =</span> <span class="st">"mean"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate Annual Energy Production (Ei)</span></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ei =</span> Ci <span class="sc">*</span> pvout_mean)</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the function for both classes</span></span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>class4_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(class4_mmu, pvout)</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>class5_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_sites</span>(class5_mmu, pvout)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="step-4-technical-potential-results" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-technical-potential-results">Step 4: Technical Potential Results</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate for summary </span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Capacity: convert kW to Megawatts (GW) for utility scale</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>total_cap_cl4_GW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>total_cap_cl5_GW <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ci, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>total_eng_cl4_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class4_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>total_eng_cl5_TWh <span class="ot">&lt;-</span> <span class="fu">sum</span>(class5_energy<span class="sc">$</span>Ei, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">1000000000</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Print final utility reports </span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 4 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl4_GW, <span class="dv">2</span>), <span class="st">"GW</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl4_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"--- CLASS 5 RESULTS ---</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Total Capacity:"</span>, <span class="fu">round</span>(total_cap_cl5_GW, <span class="dv">2</span>), <span class="st">"GW</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Annual Yield  :"</span>, <span class="fu">round</span>(total_eng_cl5_TWh, <span class="dv">2</span>), <span class="st">"TWh/year</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(class4_energy<span class="sc">$</span>pvout_mean) </span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(class5_energy<span class="sc">$</span>pvout_mean)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Determine energy yield per regional district</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Join top two suitability classes into one</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>top_energy <span class="ot">&lt;-</span> <span class="fu">rbind</span>(class4_energy, class5_energy)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Intersect regional district layer with energy </span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>energy_rd <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_join</span>(top_energy, rd, <span class="at">join =</span> within, <span class="at">largest =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean table to provide summary stats</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Want to know total capacity and energy per RD within each class</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>RegDis_energy <span class="ot">&lt;-</span> energy_rd <span class="sc">%&gt;%</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(NAME_2, Ci, Ei, DN) <span class="sc">%&gt;%</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(NAME_2) <span class="sc">%&gt;%</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">total_capacity_GW =</span> <span class="fu">sum</span>(Ci)<span class="sc">/</span><span class="dv">1000000</span>,</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">total_energy_TWh =</span> <span class="fu">sum</span>(Ei)<span class="sc">/</span><span class="dv">1000000000</span>)</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop geometry to export</span></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>RegDis_energy_df <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_drop_geometry</span>(RegDis_energy) </span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(RegDis_energy_df, <span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Suitability Surfaces/Spreadsheets/RegDis_energy_summary.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
 </section>
 
 </main>
