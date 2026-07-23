@@ -29,7 +29,7 @@ This document provides a detailed guide of the analysis, including all code used
 
 [Click for first-draft publication](https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/MZYJFF)
 
-[Click for raw data download](tbd)
+[Click for raw data download - coming soon](tbd)
 
 **NOTE:** You will need to change each file path to a folder on your computer!
 
@@ -192,7 +192,7 @@ writeRaster(gti_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC
 
 ```{r}
 #| echo: false
-#| fig-cap: "Visualize Criteria 1 - GTI"
+#| fig-cap: "Criteria 1 - GTI"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif"), col=suitability_cols)
 ```
@@ -313,7 +313,7 @@ writeRaster(slope_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-U
 
 ```{r}
 #| echo: false
-#| fig-cap: "Visualize Criteria 2 - Ground Slope"
+#| fig-cap: "Criteria 2 - Ground Slope"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif"), col=suitability_cols)
 ```
@@ -441,7 +441,7 @@ writeRaster(aspect_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-
 
 ```{r}
 #| echo: false
-#| fig-cap: "Visualize Criteria 3 - Ground Aspect"
+#| fig-cap: "Criteria 3 - Ground Aspect"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif"), col=suitability_cols)
 ```
@@ -499,7 +499,7 @@ writeRaster(subs_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UB
 
 ```{r}
 #| echo: false
-#| fig-cap: "Visualize Criteria 4 - Proximity to Substations"
+#| fig-cap: "Criteria 4 - Proximity to Substations"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif"), col=suitability_cols)
 ```
@@ -557,7 +557,7 @@ writeRaster(cities_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-
 
 ```{r}
 #| echo: false
-#| fig-cap: "Visualize Criteria 5 - Proximity to Demand Centers"
+#| fig-cap: "Criteria 5 - Proximity to Demand Centers"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif"), col=suitability_cols)
 ```
@@ -615,7 +615,7 @@ writeRaster(roads_reclass, "/Users/kenziethomson/Library/CloudStorage/OneDrive-U
 
 ```{r}
 #| echo: false
-#| fig-cap: "Visualize Criteria 6 - Proximity to Major Roads"
+#| fig-cap: "Criteria 6 - Proximity to Major Roads"
 suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif"), col=suitability_cols)
 ```
@@ -816,8 +816,6 @@ Clean the data by isolating land with a canopy cover greater than 40% by creatin
 # Read in NTEMS canopy cover raster 
 canopy <- rast("/Users/kenziethomson/Downloads/CA_canopy_cover_2022/CA_canopy_cover_2022.tif")
 
-#rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Raw/CA_canopy_cover_2022.tif")
-
 # Create a BC boundary layer in the projection of the canopy raster so that we can crop it. We cannot crop it using the template raster yet because the crs' are different and cannot alter the template without affecting the grid. 
 target_crs <- crs(canopy)
 bc_canopy_boundary <- sf::st_transform(bc, target_crs)
@@ -825,26 +823,7 @@ bc_canopy_boundary <- sf::st_transform(bc, target_crs)
 # Crop canopy cover raster to bc bounding box
 canopy_crop <- crop(canopy, bc_canopy_boundary) 
 
-# Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template
-# Method = bilinear - use for continuous data
-canopy_proj <- project(canopy_crop, template, method = "bilinear") 
-
-# Mask to BC administrative boundary
-canopy_mask <- mask(canopy_proj, template) 
-
-# Save to cleaned constraints folder
-writeRaster(canopy_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/cleaned/canopy_cleaned.tif")
-```
-
-Reclassify to 1/0 binary such that canopy cover > 40% is 0 (unsuitable) and canopy cover < 40% is 1 (suitable). 
-
-```{r}
-#| message: false
-#| eval: false
-
-# Create reclassification scheme 
-# 0 = not suitable - within constraints
-# 1 = suitable - not within constraints
+# Define non-overlapping bins and classify 
 m <- c(0, 40, 1,
        40, 100, 0)
 
@@ -852,7 +831,13 @@ m <- c(0, 40, 1,
 canopy_matrix <- matrix(m, ncol = 3, byrow = TRUE)
 
 # Apply classification
-canopy_binary <- terra::classify(canopy_mask, canopy_matrix)
+canopy_binary <- terra::classify(canopy_crop, canopy_matrix, include.lowest = TRUE, right = FALSE)
+
+# Project the binary/categorical result to your template using NN
+canopy_binary <- project(canopy_binary, template, method = "near") 
+
+# Mask to BC administrative boundary
+canopy_binary <- mask(canopy_binary, template)
 
 # Save to reclassified folder
 writeRaster(canopy_binary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif", overwrite = TRUE)
@@ -995,54 +980,14 @@ constraints <- (pca_binary *
                 rails_binary *
                 lcr_binary) 
 
-# Alternative method
-all_cons <- c(pca_binary, alr_soils_binary, canopy_binary, roads_binary, rails_binary, lcr_binary) 
-sum_cons <- app(all_cons, fun = sum)
-constraints <- sum_cons == nlyr(all_cons) 
-constraints <- as.numeric(mask) 
-
 # Save
-writeRaster(constraints, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif")
-
-# Quick read
-constraints <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif")
-```
-
-Determine how much of BC each land constraint occupies 
-
-```{r}
-#| message: false
-#| eval: false
-
-# Create a named list
-layers <- list(
-  LCR = lcr_binary,
-  ALR = alr_soils_binary,
-  Canopy = canopy_binary,
-  Roads = roads_binary,
-  Rails = rails_binary,
-  PCA = pca_binary)
-
-# Loop through and check restriction percentage
-for (name in names(layers)) {
-  layer <- layers[[name]]
-  zeros <- freq(layer, value = 0)$count
-  pct_restricted <- (zeros / ncell(layer)) * 100
-  print(paste(name, "restricted:", round(pct_restricted, 1), "%"))
-}
-
-# What % is actually restricted (value = 0)?
-zeros <- freq(constraints, value = 0)$count
-pct_restricted <- (zeros / ncell(constraints)) * 100
-
-print(paste("Final mask restricted:", round(pct_restricted, 2), "%"))
-print(paste("Final mask suitable:", round(100 - pct_restricted, 2), "%")) 
+writeRaster(constraints, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif", overwrite = TRUE)
 ```
 
 ```{r}
 #| echo: false
 #| fig-cap: "Land Constraints Mask"
-cons_cols <- c("#696969", "#228B22")
+cons_cols <- c("#696969", "#35CC35")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif"), col=cons_cols)
 ```
 
@@ -1086,7 +1031,7 @@ for (i in seq_along(file_paths)) {
 # Aggregate using Geometric Mean method 
 master_pcm <- matrix(1, nrow = n, ncol = n)
 
-# Rather than computing geometric mean into the upper triangle of the pcm and deriving the lower triangle as the reciprocal, we need to store the raw computed values in the lower triangle and derive the upper triangle as the reciprocal. We need to do this because of the way CR() checks the PCM. 
+# Rather than computing geometric mean into the upper triangle of the pcm and deriving the lower triangle as the reciprocal, we need to store the raw computed values in the lower triangle and derive the upper triangle as the reciprocal. We need to do this because of the way CR() checks the PCM.
 for (i in 1:(n - 1)) {
   for (j in (i + 1):n) {
     vals <- all_matrices[i, j, ]
@@ -1131,6 +1076,7 @@ weights_percent <- weights_norm * 100
 ahp_weights <- cbind(criteria, weights_norm, weights_percent)
 colnames(ahp_weights) <- c("Criteria", "Decimal", "Percent")
 
+# Save
 write.csv(ahp_weights, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/ahp/ahp_weights.csv")
 ```
 
@@ -1162,14 +1108,6 @@ w <- c(GTI = 0.26275243,
        Roads = 0.14434327,
        Substations = 0.30243095)
 
-# Load in cleaned, reclassified criteria layers if they aren't still saved in the Environment 
-gti_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif")
-slope_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif")
-aspect_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif")
-cities_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif")
-roads_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif")
-subs_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif")
-
 # Multiply layer by respective weight and add together to derive solar PV suitability across BC
 raw_suitability <-
   gti_reclassified * w["GTI"] +
@@ -1181,8 +1119,6 @@ raw_suitability <-
 
 # Save output
 writeRaster(raw_suitability, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif")
-
-raw_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif")
 ```
 
 ```{r}
@@ -1192,7 +1128,7 @@ y_to_r <- colorRampPalette(c("#FFFFCC", "#FECC5C","#FD8D3C", "#F03B20", "#BD0026
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif"), col = y_to_r(100))
 ```
 
-Transform the continuous suitability gradient back into our 5 integer bins using equal interval.
+Transform the continuous suitability gradient back into our 5 integer bins using equal interval and finally, apply the land constraint mask to the classified suitability raster.
 
 ```{r}
 #| message: false
@@ -1218,13 +1154,7 @@ m_ei <- matrix(c(
 classified_suitability <- terra::classify(raw_suitability, rcl = m_ei, include.lowest = TRUE)
 
 # Apply land constraints mask
-#final_suitability <- terra::mask(classified_suitability, constraints, maskvalues = 0, updatevalue = 0)
-
-# Load into second version
-final_suitability <- classified_suitability
-
-# Mask using constraints 0 cells
-final_suitability[constraints == 0] <- 0
+final_suitability <- terra::mask(classified_suitability, constraints, maskvalues = 0, updatevalue = 0)
 
 # Save
 writeRaster(classified_suitability,"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif", overwrite = TRUE)
@@ -1234,18 +1164,14 @@ writeRaster(final_suitability, "/Users/kenziethomson/Library/CloudStorage/OneDri
 ```{r}
 #| echo: false
 #| fig-cap: "Classified Suitability"
-suitability_cols <- c("1" = "#FFFFCC", 
-                      "2" = "#FECC5C",
-                      "3" = "#FD8D3C",
-                      "4" = "#F03B20",
-                      "5" = "#BD0026")
+suitability_cols <- c("#FFFFCC","#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif"), col = suitability_cols)
 ```
 
 ```{r}
 #| echo: false
-#| fig-cap: "Masked Suitability"
-suitability_cols <- c("#696969", "#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
+#| fig-cap: "Final Suitability"
+suitability_cols <- c("#696969","#FFFFCC","#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif"), col = suitability_cols)
 ```
 
@@ -1254,6 +1180,9 @@ plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_
 ```{r}
 #| message: false
 #| eval: false
+#| echo: false 
+
+# This chunk will not appear on the html page
 
 # Quick Read
 lcr_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif")
@@ -1262,36 +1191,44 @@ rails_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/
 canopy_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif")
 alr_soils_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif")
 pca_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif")
-classified_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif", overwrite = TRUE)
-final_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif", overwrite = TRUE)
+classified_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif")
+final_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif")
+# Load in cleaned, reclassified criteria layers if they aren't still saved in the Environment 
+gti_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif")
+slope_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif")
+aspect_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif")
+cities_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif")
+roads_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif")
+subs_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif")
+raw_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif")
 ```
 
+Key result 1: BC's total land base by suitability class:
 
 ```{r}
 #| message: false
 #| eval: false
 
-# Get suitability map data as a df
-suitability_summary <- as.data.frame(freq(final_suitability))
-
-sum(suitability_summary$count)
-
-# Get area of 1 pixel
+# Get frequency table and calculate pixel area (in km²) 
 pixel_area_km2 <- prod(res(final_suitability)) / 1e6
 
-# Populate area in km2 column 
-suitability_summary$area_km2 <- suitability_summary$count * pixel_area_km2
+# Create summary table
+suitability_summary <- as.data.frame(freq(final_suitability)) %>%
+  transform(
+    area_km2 = count * pixel_area_km2,
+    acres = count * pixel_area_km2 * 247.105,
+    percent_of_total = (count * pixel_area_km2 / sum(count * pixel_area_km2)) * 100)
 
-# Add acres column 
-suitability_summary$acres <- suitability_summary$area_km2 * 247.105 
+# Verify total percentage sums to 100
+sum(suitability_summary$percent_of_total)
 
-# Add percent of total land each class occupies
-sum(suitability_summary$area_km2) 
-suitability_summary$percent_of_total <- suitability_summary$area_km2 / 948572.3 * 100
-sum(suitability_summary$percent_of_total) #100 :)
+# Save
+write.csv(suitability_summary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_summary.csv")
+```
 
-suitability_summary
-
+```{r}
+#| echo: false
+suitability_summary <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_summary.csv")
 # Visualize
 ggplot(subset(suitability_summary), 
        aes(x = factor(value), y = area_km2, fill = factor(value))) +
@@ -1318,8 +1255,142 @@ ggplot(subset(suitability_summary),
   theme_minimal() +
   theme(panel.grid.major.x = element_blank(),
         legend.position = "right")
+```
 
-write.csv(suitability_summary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_summary.csv")
+Key result 2: Amount of each suitability class within each regional district:
+
+```{r}
+#| eval: false
+
+# Read in regional districts data 
+rd <- sf::st_read("~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/BC_RegionalDistricts.shp")
+
+# Project to 3005
+rd <- sf::st_transform(rd, crs = 3005)
+
+# Define classes of interest 
+suit_classes <- 1:5
+
+# Ensure reg dis is a spatvect with matching crs
+rd_v <- vect(rd)
+rd_v <- project(rd_v, crs(final_suitability))
+
+# Create empty list to store results 
+zonalStats <- list()
+
+# Initiate loop 
+for (i in 1:nrow(rd_v)) {
+  message(paste("Processing district:", i, "of", nrow(rd_v)))
+  
+  single_dis <- rd_v[i, ]
+  
+  # Crop and mask to the individual district
+  final_suitability_crop <- crop(final_suitability, single_dis)
+  final_suitability_mask <- mask(final_suitability_crop, single_dis)
+  rm(final_suitability_crop)
+  
+  # Extract all values from the cropped district directly (no manual chunking needed here)
+  vals <- values(final_suitability_mask, mat = FALSE, na.rm = TRUE)
+  
+  # Count the frequencies of your target classes
+  counts_vec <- sapply(suit_classes, function(cls) sum(vals == cls))
+  
+  rm(final_suitability_mask)
+  gc()
+  
+  zonalStats[[i]] <- tibble(
+    district_id   = i,
+    district_name = rd_v$NAME_2[i],  
+    class         = suit_classes,
+    cell_count    = as.numeric(counts_vec)
+  )
+}
+
+# Combine all district tables into one master dataframe
+final_zonal_df <- bind_rows(zonalStats)
+
+# Create proportions
+rd_Zstats_df <- final_zonal_df %>%
+  group_by(district_id, district_name) %>%
+  mutate(
+    total_cells = sum(cell_count, na.rm = TRUE),
+    proportion  = if_else(total_cells > 0, cell_count / total_cells, 0)) %>%
+  ungroup() %>%
+  mutate(class = factor(class,
+                        levels = suit_classes,
+                        labels = paste("Class", suit_classes)))
+
+# Add area column using cell res * count
+pixel_area_km2 <- prod(res(final_suitability)) / 1e6 
+rd_Zstats_df$Area_km2 <- round(rd_Zstats_df$cell_count * pixel_area_km2, 2)
+
+# Organize so they are sorted in descending order from most suitable to least suitable
+class_order <- rd_Zstats_df %>%
+  filter(class %in% c("Class 4", "Class 5")) %>%
+  group_by(district_name) %>%
+  summarize(total_high_suit_area = sum(Area_km2, na.rm = TRUE)) %>%
+  arrange(total_high_suit_area) %>%
+  pull(district_name)
+
+rd_Zstats_df <- rd_Zstats_df %>%
+  mutate(district_name = factor(as.character(district_name), levels = class_order))
+
+write.csv(rd_Zstats_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_regDis.csv", row.names = FALSE)
+```
+
+```{r}
+#| echo: false
+
+rd_Zstats_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_regDis.csv")
+
+# Visualize breakdown using psuedo log scale 
+class_colors <- c(
+  "Class 1" = "#FFFFCC",      
+  "Class 2" = "#FECC5C",     
+  "Class 3" = "#FD8D3C",     
+  "Class 4" = "#F03B20",      
+  "Class 5" = "#BD0026") 
+
+ggplot(rd_Zstats_df, aes(fill = class, y = Area_km2, x = district_name)) +
+  geom_bar(position = "stack", stat = "identity") +
+  ggtitle("Suitability Class by Regional District (log scale)") +
+  scale_fill_manual(
+    values = class_colors, 
+    name = "Suitability Class",
+    labels = c("Class 1" = "Least Suitable",
+               "Class 2" = "Less Suitable",
+               "Class 3" = "Moderately Suitable",
+               "Class 4" = "Suitable",
+               "Class 5" = "Very Suitable")) +
+  # Apply the pseudo-log transformation to the Y-axis
+  scale_y_continuous(
+    trans = pseudo_log_trans(sigma = 1, base = 10),
+    breaks = 10^(0:6),          # 1, 10, 100, ... 10,000,000
+    labels = label_comma()) +
+  labs(x = "Regional District", 
+       y = expression("Area (km"^2*", log scale)"), 
+       fill = "Suitability Class") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(face = "bold"))
+
+# Visualize breakdown using raw area (not peudo log scale) 
+# Accurate depiction but hard to infer anything because total area between each RD varies so much 
+ggplot(rd_Zstats_df, aes(fill = class, y = Area_km2, x = district_name)) +
+  geom_bar(position = "stack", stat = "identity") +
+  ggtitle("Suitability Class by Regional District") +
+  scale_fill_manual(
+    values = class_colors, 
+    name = "Suitability Class",
+    labels = c("1" = "Class 1 - Least Suitable",
+               "2" = "Class 2 - Less Suitable",
+               "3" = "Class 3 - Moderately Suitable",
+               "4" = "Class 4 - Suitable",
+               "5" = "Class 5 - Very Suitable")) +
+  labs(x = "Regional District", 
+       y = expression("Area (km"^2*")"), 
+       fill = "Suitability Class") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(face = "bold"))
 ```
 
 # Stage 2: Technical Potential
@@ -1327,6 +1398,8 @@ write.csv(suitability_summary, "/Users/kenziethomson/Library/CloudStorage/OneDri
 Data source: [Global Solar Atlas](https://globalsolaratlas.info/download/canada) 
 
 Calculating the technical potential of the most suitable areas provides insight into the provinces total resource potential. This section utilizes Potential Photovoltaic Output data in combination with energy yield assumptions to derive two key results: Total Installable Capacity and Total Annual Energy. 
+
+CODE NOT COMPLETE:
 
 ```{r}
 #| message: false
