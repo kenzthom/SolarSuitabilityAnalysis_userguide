@@ -982,6 +982,36 @@ constraints <- (pca_binary *
 
 # Save
 writeRaster(constraints, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif", overwrite = TRUE)
+
+# Summarize cell count and area occupied by each constraint in a df
+cons_files <- list.files(
+  path = "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified",
+  pattern = "\\.tif", full.names = TRUE)
+
+cons_list <- list() 
+
+for (i in seq_along(cons_files)){
+  r <- rast(cons_files[i])
+  df_freq <- as.data.frame(freq(r))
+  df_freq$source <- basename(cons_files[i]) 
+  cons_list[[i]] <- df_freq
+}
+cons_df <- do.call(rbind, cons_list) 
+
+pixel_area_km2 <- prod(res(constraints)) / 1e6
+
+cons_df <- cons_df %>%
+  mutate(area = count * pixel_area_km2) %>%
+  mutate(percent_total = area / 948846.6012 * 100)
+
+write.csv(cons_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints_summary.csv")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: Constraints summary 
+cons_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints_summary.csv")
+cons_df
 ```
 
 ```{r}
@@ -1185,6 +1215,7 @@ plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_
 # This chunk will not appear on the html page
 
 # Quick Read
+constraints <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif")
 lcr_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif")
 roads_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif")
 rails_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/rails_binary.tif")
@@ -1228,26 +1259,31 @@ write.csv(suitability_summary, "/Users/kenziethomson/Library/CloudStorage/OneDri
 
 ```{r}
 #| echo: false
+#| fig-cap: Areal breakdown of BC's total land base by suitability class
+
+rd_Zstats_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_regDis.csv")
+
 suitability_summary <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_summary.csv")
+
 # Visualize
-ggplot(subset(suitability_summary), 
-       aes(x = factor(value), y = area_km2, fill = factor(value))) +
+ggplot(suitability_summary, aes(x = class, y = area_km2, fill = as.character(class))) + 
   geom_col() +
   geom_text(aes(label = round(percent_of_total, 3), vjust = -0.5)) +
   scale_y_continuous(labels = scales::label_number(accuracy = 1, big.mark = ",")) +
-  scale_fill_manual(values = c("0" = "#696969",
-                               "1" = "#FFFFCC",  
-                               "2" = "#FECC5C",  
-                               "3" = "#FD8D3C",  
-                               "4" = "#F03B20",  
-                               "5" = "#BD0026"), 
- name = "Suitability Class", 
- labels = c("Restricted",
-             "Least Suitable",
-             "Less Suitable",
-             "Moderately Suitable",
-             "Suitable",
-             "Very Suitable")) +
+  scale_fill_manual(
+    values = c("0" = "#696969",
+               "1" = "#FFFFCC",  
+               "2" = "#FECC5C",  
+               "3" = "#FD8D3C",  
+               "4" = "#F03B20",  
+               "5" = "#BD0026"), 
+    name = "Suitability Class", 
+    labels = c("Restricted",
+               "Least Suitable",
+               "Less Suitable",
+               "Moderately Suitable",
+               "Suitable",
+               "Very Suitable")) +
   labs(title = "Total Land Area by Suitability Class",
        subtitle = "Percent of Total Area Labeled",
        x = "Suitability Class",
@@ -1340,6 +1376,7 @@ write.csv(rd_Zstats_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/
 
 ```{r}
 #| echo: false
+#| fig-cap: Suitability within BC's Regional District, ranked in ascending order by amount of Class 4 and Class 5 land. A log scale is used to account for the large differences in area among Regional Districts and make visual comparison feasible. 
 
 rd_Zstats_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_regDis.csv")
 
@@ -1372,6 +1409,13 @@ ggplot(rd_Zstats_df, aes(fill = class, y = Area_km2, x = district_name)) +
        fill = "Suitability Class") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(face = "bold"))
+```
+
+```{r}
+#| echo: false
+#| fig-cap: Suitability within BC's Regional District, ranked in ascending order by amount of Class 4 and Class 5 land. No log scale is used.
+
+rd_Zstats_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_regDis.csv")
 
 # Visualize breakdown using raw area (not peudo log scale) 
 # Accurate depiction but hard to infer anything because total area between each RD varies so much 
@@ -1401,35 +1445,54 @@ Calculating the technical potential of the most suitable areas provides insight 
 
 ## Step 1: Prepare Data
 
-First, isolate class 4 and 5 pixels from our final suitability raster - this way we are only deriving energy yield estimates from our most optimal land
+First, clean PVOUT raster and isolate class 4 and 5 pixels from our final suitability raster - this way we are only deriving energy yield estimates from our most optimal land
 
 ```{r}
 #| message: false
 #| eval: false 
 
 # Read in pvout data
-pvout <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Criteria/Cleaned/pvout_clean.tif")
+pvout <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/PVOUT.tif")
+
+target_crs <- crs(pvout)
+bc_pvout_boundary <- sf::st_transform(bc, target_crs)
+
+# Crop lcr to bc bounding box
+pvout_crop <- crop(pvout, bc_pvout_boundary) 
+
+# Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template
+# Method = near - use nearest neighbor as method to preserve integer classification of original layer 
+pvout_proj <- project(pvout_crop, template, method = "bilinear")
+
+# Mask to BC administrative boundary
+pvout_mask <- mask(pvout_proj, template) 
+
+writeRaster(pvout_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/pvout_clean.tif")
+```
+
+```{r}
+#| message: false
+#| eval: false 
 
 # Isolate Class 4 & 5 
 class4 <- final_suitability
 class4[final_suitability != 4] <- NA 
-writeRaster(class4, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4.tif")
+writeRaster(class4, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/class4.tif")
 
 class5 <- final_suitability
 class5[final_suitability != 5] <- NA 
-writeRaster(class5, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5.tif")
-
+writeRaster(class5, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/class5.tif")
 ```
 
-Now, use a GIS GUI (ArcGIS Pro, QGIS) to transform each raster into a polygon layer. Once done, we will filter out sites smaller than 5 acres (minimum size threshold for a 1 MW installation)
+Now, use a GIS GUI (ArcGIS Pro, QGIS) to transform each raster into a polygon layer - terra:as.polygons() never runs, thats why a seperate software is necessary. Once done, we will filter out sites smaller than 5 acres (minimum size threshold for a 1 MW installation)
 
 ```{r}
 #| message: false
 #| eval: false 
 
 # Load in polygon layers made in a GIS GUI
-class4_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class4_polys.shp")
-class5_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/PVOUT/V4/class5_polys.shp")
+class4_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/class4_polygons.shp")
+class5_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/class5_polygons.shp")
 
 # Filter out areas smaller than 5 acre footprint 
 # Class 4
@@ -1438,8 +1501,8 @@ class4_poly$Area_acres <- class4_poly$Area_m2 / 4046.85642
 class4_poly$Area_km2 <- class4_poly$Area_m2 / 1e6
 class4_mmu <- class4_poly[class4_poly$Area_acres > 5, ]
 
-# Total area of all sites:
-sum(class4_mmu$Area_km2)
+# Total area of all class 4 sites:
+cat("The total area of suitable sites in class 4 is:", sum(class4_mmu$Area_km2), "km2")
 
 # Class 5
 class5_poly$Area_m2 <- as.numeric(sf::st_area(class5_poly))
@@ -1447,8 +1510,8 @@ class5_poly$Area_acres <- class5_poly$Area_m2 / 4046.85642
 class5_poly$Area_km2 <- class5_poly$Area_m2 / 1e6
 class5_mmu <- class5_poly[class5_poly$Area_acres > 5, ]
 
-# Total area of all sites:
-sum(class5_mmu$Area_km2)
+# Total area of all class 5 sites:
+cat("The total area of suitable sites in class 5 is:", sum(class5_mmu$Area_km2), "km2")
 ```
 
 ## Step 2: Assign Ground Cover Ratio 
@@ -1525,8 +1588,8 @@ process_solar_sites <- function(sf_layer, pvout_raster) {
 }
 
 # Run the function for both classes
-class4_energy <- process_solar_sites(class4_mmu, pvout)
-class5_energy <- process_solar_sites(class5_mmu, pvout)
+class4_energy <- process_solar_sites(class4_mmu, pvout_mask)
+class5_energy <- process_solar_sites(class5_mmu, pvout_mask)
 ```
 
 ## Step 4: Technical Potential Results
@@ -1537,7 +1600,7 @@ class5_energy <- process_solar_sites(class5_mmu, pvout)
 
 # Aggregate for summary 
 
-# Total Capacity: convert kW to Megawatts (GW) for utility scale
+# Total Capacity: convert kW to GigaWatts (GW) for utility scale
 total_cap_cl4_GW <- sum(class4_energy$Ci, na.rm = TRUE) / 1000000
 total_cap_cl5_GW <- sum(class5_energy$Ci, na.rm = TRUE) / 1000000
 
@@ -1547,15 +1610,12 @@ total_eng_cl5_TWh <- sum(class5_energy$Ei, na.rm = TRUE) / 1000000000
 
 # Print final utility reports 
 cat("--- CLASS 4 RESULTS ---\n",
-    "Total Capacity:", round(total_cap_cl4_GW, 2), "GW\n",
-    "Annual Yield  :", round(total_eng_cl4_TWh, 2), "TWh/year\n\n")
+    "Total Capacity:", round(total_cap_cl4_GW, 2), "GW \n",
+    "Annual Yield  :", round(total_eng_cl4_TWh, 2), "TWh/year \n\n")
 
 cat("--- CLASS 5 RESULTS ---\n",
-    "Total Capacity:", round(total_cap_cl5_GW, 2), "GW\n",
-    "Annual Yield  :", round(total_eng_cl5_TWh, 2), "TWh/year\n")
-
-mean(class4_energy$pvout_mean) 
-mean(class5_energy$pvout_mean)
+    "Total Capacity:", round(total_cap_cl5_GW, 2), "GW \n",
+    "Annual Yield  :", round(total_eng_cl5_TWh, 2), "TWh/year \n")
 ```
 
 Determine energy yield per regional district
@@ -1568,19 +1628,55 @@ Determine energy yield per regional district
 top_energy <- rbind(class4_energy, class5_energy)
 
 # Intersect regional district layer with energy 
-energy_rd <- sf::st_join(top_energy, rd, join = within, largest = TRUE)
+energy_rd <- sf::st_join(top_energy, bc, largest = TRUE)
 
 # Clean table to provide summary stats
 # Want to know total capacity and energy per RD within each class
 RegDis_energy <- energy_rd %>%
-  select(NAME_2, Ci, Ei, DN) %>%
   group_by(NAME_2) %>%
   summarise(total_capacity_GW = sum(Ci)/1000000,
-            total_energy_TWh = sum(Ei)/1000000000)
+            total_energy_TWh = sum(Ei)/1000000000) %>%
+  rename(Reg_Dis = NAME_2) %>%
+  arrange(total_energy_TWh)
 
 # Drop geometry to export
 RegDis_energy_df <- sf::st_drop_geometry(RegDis_energy) 
 
-write_csv(RegDis_energy_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Suitability Surfaces/Spreadsheets/RegDis_energy_summary.csv")
+write_csv(RegDis_energy_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/RegDis_energy_summary.csv")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: Energy yield results per Regional District
+RegDis_energy_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/RegDis_energy_summary.csv")
+
+RegDis_energy_df
+
+# Calculate the scaling factor
+scale_factor <- max(RegDis_energy_df$total_capacity_GW, na.rm = TRUE) / max(RegDis_energy_df$total_energy_TWh, na.rm = TRUE)
+
+ggplot(RegDis_energy_df, aes(x = reorder(Reg_Dis, total_energy_TWh))) + 
+  ggtitle("Estimated Resource Yield by Regional District") +
+  
+  # Capacity bars (Primary Y-axis)
+  geom_col(aes(y = total_capacity_GW, fill = "Capacity (GW)"), 
+           position = position_nudge(x = -0.15), width = 0.3) +
+  
+  # Energy bars (Scaled up to match the primary Y-axis)
+  geom_col(aes(y = total_energy_TWh * scale_factor, fill = "Energy (TWh)"),
+           position = position_nudge(x = 0.15), width = 0.3) + 
+  
+  # Setup the primary and secondary axes
+  scale_y_continuous(
+    name = "Installable Capacity (GW)",
+    sec.axis = sec_axis(~ . / scale_factor, name = "Annual Energy (TWh)")) +
+  
+  # Labels and Theme
+  labs(x = "Regional District",
+       fill = "Resource") + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(face = "bold"),
+        legend.position = "bottom")
 ```
 
