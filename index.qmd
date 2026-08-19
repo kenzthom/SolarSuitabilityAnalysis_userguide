@@ -1,12 +1,7 @@
 ---
 title: "Solar PV Suitability Analysis: User Guide"
-date: 2026-07-15
+date: 2026-08-19
 author: Kenzie Thomson
-format: html
-toc: true
-toc-location: left
-toc-depth: 4
-theme: minty
 title-block-banner: images/solarfarm.jpg
 title-block-banner-color: white
 ---
@@ -41,7 +36,7 @@ First, each package must be installed and loaded to complete this analysis
 
 ```{r}
 #| message: false
-#| eval: false
+#| warning: false
 
 # Load packages
 library(terra)
@@ -57,24 +52,6 @@ library(bcmaps)
 library(stringr)
 library(readxl)
 library(topsis)
-```
-
-I recommend setting up an organized file system, similar to the one below, to save your intermediate outputs and final results.
-
-```{text}
-Solar_Suitability/
-├── raw_data/
-├── criteria/
-│   ├── cleaned/         # Data layers reprojected, clipped, masked, resampled, and rasterized
-│   ├── reclassified/    # Data layers reclassified to a 1-5 suitability scale
-│   ├── slope/           # DEM-derived slope pieces
-│   └── aspect/          # DEM-derived aspect pieces
-├── constraints/
-│   ├── binary/          # Data layers brought to a binary classification
-│   └── mask/            # Final constraints mask
-└── suitability_surfaces/
-    ├── unmasked/        # Suitability results without constraints mask
-    └── masked/          # Suitability results with constraints mask
 ```
 
 # Stage 1: Geographical Potential
@@ -1244,7 +1221,7 @@ suitability_cols <- c("#696969","#FFFFCC","#FECC5C","#FD8D3C","#F03B20","#BD0026
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif"), col = suitability_cols)
 ```
 
-## Stage 1 Results 
+# Stage 1 Results 
 
 ```{r}
 #| message: false
@@ -1425,6 +1402,8 @@ write.csv(rd_Zstats_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/
 Fix naming scheme so that each district in district_name does not say 'regional district' at the end
 
 ```{r}
+#| message: false
+#| eval: false
 rd_Zstats_df <- rd_Zstats_df %>% 
   mutate(district_name = str_remove(district_name, "Regional District of")) %>%
   mutate(district_name = str_remove(district_name, "Regional District")) %>%
@@ -1664,7 +1643,7 @@ class4_energy <- process_solar_sites(class4_mmu, pvout_mask)
 class5_energy <- process_solar_sites(class5_mmu, pvout_mask)
 ```
 
-## Stage 2 Results
+# Stage 2 Results
 
 ```{r}
 #| message: false
@@ -1807,7 +1786,7 @@ The TOPSIS method, which orders suitable sites from best to worst, is based on t
 
 We will order sites within the Thompson Nicola regional district - the district with the greatest amount of suitable land and energy yield - to determine the best sites within the province for development 
 
-###Step 1: Filter data to TN RD
+### Step 1: Filter data to TN RD
 
 ```{r}
 #| message: false
@@ -1827,7 +1806,7 @@ tn_sites <- st_intersection(tn_rd, top_energy)
 cat("Total sites in thompson nicola:", nrow(tn_sites))
 ```
 
-### Step 2: Extract criteria values per polygon 
+### Step 2: Extract Criteria
 
 ```{r}
 #| message: false
@@ -1851,9 +1830,9 @@ tn_sites <- tn_sites %>%
     site_id = row_number())
 ```
 
-### Step 3: Build TOPSIS decision matrix
+### Step 3: Build Decision Matrix
 
-Extract from the thompson nicola sites data layer the 7 input criteria (6 suitability criteria + annual energy generation)
+Extract from the Thompson Nicola sites data layer the 7 input criteria (6 suitability criteria + annual energy generation)
 
 ```{r}
 #| message: false
@@ -1866,20 +1845,11 @@ decision_matrix <- tn_sites %>%
   as.data.frame()
 ```
 
-### Step 4: Define AHP weights
+### Step 4: Define Weights
 
-These are the original weights from the AHP analysis:
+We want to take the original weights from the master PCM and add annual energy generation as a criteria used to rank the sites. This means we must reallocate the weights while preserving the relative importance determined by experts. 
 
-gti = 0.262
-ground slope = 0.092
-ground aspect = 0.085
-proximity to cities= 0.112
-proximity to roads = 0.144
-proximity to subs = 0.302
-
-But we want to add annual energy generation as a criteria used to rank the sites, so we must reallocate the weights while preserving the relative importance determined by experts. 
-
-We will assign annual energy yield (which inherently accounts for area, capacity, and PVout) a weight of 20%.
+We will assign annual energy yield (which inherently accounts for area, capacity, and PVout) a weight of 20% and rescale the weights by a factor of 0.80.
 
 ```{r}
 #| message: false
@@ -1912,7 +1882,7 @@ weights_base <- c(
 weights_base
 ```
 
-###Step 5: Implement TOPSIS
+### Step 5: Implement TOPSIS
 
 We will use the topsis() function from the topsis package. This is easier to implement than TOPSIS() from the MCDA package because it internally calculates the Positive Ideal Siutation (PIS), Negative Ideal Siutaion (NIS) and the normalized decision matrix. 
 
@@ -1955,16 +1925,8 @@ top_5_sites <- tn_sites_ranked %>%
   filter(rank <= 5) %>%
   arrange(rank)
 
-# Map them
-ggplot(tn_sites_ranked) +
-  geom_sf(aes(fill = rank)) +
-  geom_sf(data = top_5_sites, fill = "red") +
-  labs(title = "Thompson-Nicola TOPSIS Ranking",
-       fill = "Rank") +
-  theme_minimal()
-
-# Save TOPSIS results
-sf::st_write(tn_sites_ranked, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/topsis/thompson_nicola_topsis_rankings.shp", append = FALSE)
+# Save
+sf::st_write(tn_sites_ranked, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/topsis/thompson_nicola_topsis_rankings.shp")
 ```
 
 ### Step 6: Sensitivity Analysis
@@ -1994,6 +1956,41 @@ for (ew in c(0.10, 0.15, 0.20, 0.25)) {
 }
 
 print(sensitivity_results)
+```
+
+# Stage 3 Results
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-cap: Thompson Nicola Regional District Site Ranking Using TOPSIS
+
+tn_sites_ranked <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/topsis/thompson_nicola_topsis_rankings.shp", quiet = TRUE)
+
+# Add rank group to colour by
+tn_sites_ranked <- tn_sites_ranked %>%
+  mutate(
+    rank_group = case_when(
+      rank <= 10 ~ "Top 10 Sites",
+      rank > 10 & rank <= 100  ~ "Sites Ranked 11 - 100",
+      rank > 100 & rank <= 1000 ~ "Sites Ranked 101 - 1000",
+      TRUE ~ "Remaining Sites"),
+    rank_group = factor(rank_group, levels = c("Top 10 Sites", 
+                                   "Sites Ranked 11 - 100", 
+                                   "Sites Ranked 101 - 1000",
+                                   "Remaining Sites")))
+
+# Map them
+ggplot(tn_sites_ranked) +
+  geom_sf(aes(fill = rank_group), color = NA) +
+  scale_fill_manual(values = c("#cb0909",
+                               "#ea5312",
+                               "#fe9423",
+                               "#FECC5C")) +
+  labs(title = "Thompson-Nicola TOPSIS Site Ranking",
+       fill = "Rank Group") +
+  theme_minimal()
 ```
 
 

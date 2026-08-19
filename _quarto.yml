@@ -1,0 +1,9 @@
+project:
+  output-dir: .
+format:
+  html:
+    toc: true
+    code-fold: false
+    embed-resources: false
+    theme: minty 
+    title: "Solar Suitability Analysis: User Guide"
