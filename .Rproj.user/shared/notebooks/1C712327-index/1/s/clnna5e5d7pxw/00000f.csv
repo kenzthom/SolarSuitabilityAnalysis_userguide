@@ -1,0 +1,4 @@
+"0","#| echo: false"
+"0","#| fig-cap: ""Raw Suitability Gradient"""
+"0","y_to_r <- colorRampPalette(c(""#FFFFCC"", ""#FECC5C"",""#FD8D3C"", ""#F03B20"", ""#BD0026""))"
+"0","plot(rast(""/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif""), col = y_to_r(100))"

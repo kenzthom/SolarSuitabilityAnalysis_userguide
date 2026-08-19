@@ -1,0 +1,505 @@
+######################################
+# Processing suitability map
+# data for Northern Territorial 
+# Analysis document 
+#
+# Version 4
+#
+# June 8, 2026 
+# ####################################
+
+# 1. Create df of suitability results ----
+
+# Read in suitability map clipped to northern BC 
+nbc_suit <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Existing Renewables Mapping Project/Northern BC Solar Suitability/suitability_masked_v4_NortherBC.tif")
+
+# Get map data as a df
+nbc_sum <- as.data.frame(freq(nbc_suit))
+
+# Get area of 1 pixel
+pixel_area_km2 <- prod(res(nbc_suit)) / 1e6
+
+# Populate area in km2 column 
+nbc_sum$area_km2 <- nbc_sum$count * pixel_area_km2
+
+# Add acres column 
+nbc_sum$acres <- nbc_sum$area_km2 * 247.105 
+
+# Add percent of total land each class occupies
+sum(nbc_sum$area_km2) #692341.2 km2
+nbc_sum$percent_of_total <- nbc_sum$area_km2 / 692341.2 * 100
+sum(nbc_sum$percent_of_total) #100
+
+# Save summary table 
+write.csv(nbc_sum, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Existing Renewables Mapping Project/Northern BC Solar Suitability/NBC_suitability_summary_v4.csv")
+
+# 2. Visualize as bar chart ----
+ggplot(subset(nbc_sum), aes(x = factor(value), y = area_km2, fill = factor(value))) +
+  geom_col() +
+  geom_text(aes(label = paste0(round(percent_of_total, 3), "%")), 
+            vjust = -0.5, 
+            size = 3.5, 
+            fontface = "bold") +
+  scale_y_continuous(labels = scales::label_number(suffix = " km²", big.mark = ","),
+                     n.breaks = 10,
+                     expand = expansion(mult = c(0, 0.1))) +
+  scale_x_discrete(labels = c("0" = "Restricted",
+                              "1" = "Least Suitable",
+                              "2" = "Less Suitable",
+                              "3" = "Moderately Suitable",
+                              "4" = "Suitable",
+                              "5" = "Very Suitable")) +
+  scale_fill_manual(values = c("1" = "#FFFFCC",      
+                               "2" = "#FECC5C",     
+                               "3" = "#FD8D3C",     
+                               "4" = "#F03B20",      
+                               "5" = "#BD0026")) +
+  labs(title = "Total Land Area by Suitability Class in Northern BC",
+       x = "Suitability Class",
+       y = "Area") +
+  theme_minimal() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        legend.position = "none",
+        plot.title = element_text(face = "bold"))
+
+# 3. Regional district breakdown ----
+
+# Read in regional districts data 
+rd <- sf::st_read( "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/NorthernBC_RegionalDistricts.shp")
+
+# Project to 3005
+rd <- sf::st_transform(rd, crs = 3005)
+
+# Count of suitability per Reg Dis using a for loop to overcome memory issues
+
+# Define classes of interest
+suit_classes <- 0:5
+
+# Ensure reg dis is a spatvect with match crs
+rd_v <- vect(rd)
+rd_v <- project(rd_v, crs(nbc_suit))
+
+# Create empty list to store results 
+zonalStats <- list()
+
+# Initiate loop 
+for (i in 1:nrow(rd_v)) {
+  message(paste("Processing district:", i, "of", nrow(rd_v)))
+  
+  single_dis <- rd_v[i, ]
+  
+  nbc_crop <- crop(nbc_suit, single_dis)
+  nbc_mask <- mask(nbc_crop, single_dis)
+  rm(nbc_crop)
+  gc()
+  
+  # --- chunked reading so values() never blows up RAM ---
+  bs <- blocks(nbc_mask, n = 50)  # 50 horizontal strips
+  counts_vec <- setNames(numeric(length(suit_classes)), as.character(suit_classes))
+  
+  for (b in 1:bs$n) {
+    chunk <- values(
+      nbc_mask,
+      row   = bs$row[b],
+      nrows = bs$nrows[b],
+      na.rm = FALSE          # keep NAs so indexing stays correct
+    )
+    chunk <- chunk[!is.na(chunk)]   # drop NA/masked cells
+    
+    for (cls in suit_classes) {
+      counts_vec[as.character(cls)] <- counts_vec[as.character(cls)] + sum(chunk == cls)
+    }
+    
+    rm(chunk)
+  }
+  
+  rm(nbc_mask)
+  gc()
+  
+  zonalStats[[i]] <- tibble(
+    district_id   = i,
+    district_name = rd_v$AA_NAME[i],  
+    class         = suit_classes,
+    cell_count    = as.numeric(counts_vec)
+  )
+}
+
+# Create proportions
+zonalstats_df <- bind_rows(zonalStats) %>%
+  group_by(district_id, district_name) %>%
+  mutate(
+    total_cells = sum(cell_count, na.rm = TRUE),
+    proportion  = if_else(total_cells > 0, cell_count / total_cells, 0)) %>%
+  ungroup() %>%
+  mutate(class = factor(class,
+                        levels = suit_classes,
+                        labels = paste("Class", suit_classes)))
+
+# Add area column using cell res * count
+pixel_area_km2 <- prod(res(nbc_suit)) / 1e6 
+zonalstats_df$Area_km2 <- round(zonalstats_df$cell_count * pixel_area_km2, 2)
+
+# Organize so they are sorted in descending order from most suitable to least suitable
+class5_order <- zonalstats_df %>%
+  filter(class == "Class 5") %>%
+  arrange(Area_km2) %>%
+  pull(district_name)
+
+zonalstats_df <- zonalstats_df %>%
+  mutate(district_name = factor(as.character(district_name), levels = class5_order))
+
+write.csv(zonalstats_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Existing Renewables Mapping Project/Northern BC Solar Suitability/regdis_table_v4.csv",
+          row.names = FALSE)
+
+# Visualize
+class_colors <- c(
+  "Class 0" = "#696969",
+  "Class 1" = "#FFFFCC",      
+  "Class 2" = "#FECC5C",     
+  "Class 3" = "#FD8D3C",     
+  "Class 4" = "#F03B20",      
+  "Class 5" = "#BD0026") 
+
+# Visualize breakdown using raw area (not peudo log scale) 
+# Accurate depiction but hard to infer anything because total area between each 
+ggplot(zonalstats_df, aes(fill = class, y = Area_km2, x = district_name)) +
+  geom_bar(position = "stack", stat = "identity") +
+  ggtitle("Suitability by Regional District") +
+  scale_fill_manual(
+    values = class_colors, 
+    name = "Suitability Class",
+    labels = c("Class 0" = "Restricted",
+               "Class 1" = "Least Suitable",
+               "Class 2" = "Less Suitable",
+               "Class 3" = "Moderately Suitable",
+               "Class 4" = "Suitable",
+               "Class 5" = "Very Suitable")) +
+  labs(x = "Regional District", 
+       y = expression("Area (km"^2*")"), 
+       fill = "Suitability Class") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        legend.position = "bottom",
+        plot.title = element_text(face = "bold"))
+
+
+# Post Processing 
+
+## Interannual Variability Consideration 
+
+```{r}
+#| message: false
+#| eval: false
+
+ghi_vari <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/variability/GHI_Interannual_COV_1998_2022_percent.tif")
+
+target_crs <- crs(ghi_vari)
+bc_ghiVari_boundary <- sf::st_transform(bc, target_crs)
+
+# Crop lcr to bc bounding box
+ghiVari_crop <- crop(ghi_vari, bc_ghiVari_boundary) 
+
+# Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template
+# Method = near - use nearest neighbor as method to preserve integer classification of original layer 
+ghiVari_proj <- project(ghiVari_crop, template, method = "near")
+
+# Mask to BC administrative boundary
+ghiVari_mask <- mask(ghiVari_proj, template) 
+
+plot(ghiVari_mask)
+ghiVari_mask
+
+writeRaster(ghiVari_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/variability/ghi_variability_cleaned.tif")
+```
+
+## Northern BC Territorial Analysis Extraction 
+
+Generate geographical and technical potential results for only northern BC. 'nbc' = northern bc.
+
+### Step 1: Subset Data
+
+```{r}
+#| message: false
+#| eval: false
+
+# Read in northern bc regional district 
+nbc <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/NorthernBC_RegionalDistricts.shp")
+
+# Crop suitability raster to NBC polygon
+nbc_suit <- mask(final_suitability, nbc)
+
+# Get map data as a df
+nbc_sum <- as.data.frame(freq(nbc_suit))
+
+# Get area of 1 pixel
+pixel_area_km2 <- prod(res(nbc_suit)) / 1e6
+
+nBC_summary <- nbc_sum %>%
+  mutate(area_km2 = count * pixel_area_km2) %>%
+  mutate(acres = area_km2 * 247.105) %>%
+  mutate(percent_total = area_km2 / sum(area_km2) * 100)
+nBC_summary
+
+# Save summary table 
+write.csv(nBC_summary, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/northern_bc/nbc_summary.csv")
+```
+
+### Step 2: Visualize Suitability Distribution
+
+```{r}
+#| echo: false
+#| fig-cap: Geographical suitability distribution across Northern BC
+
+nBC_summary <- ("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/northern_bc/nbc_summary.csv")
+
+# Visualize as bar chart 
+ggplot((nBC_summary), aes(x = factor(value), y = area_km2, fill = factor(value))) +
+  geom_col() +
+  geom_text(aes(label = paste0(round(percent_total, 3), "%")),
+            vjust = -0.5, 
+            size = 3.5, 
+            fontface = "bold") +
+  scale_y_continuous(labels = scales::label_number(suffix = " km²", big.mark = ","),
+                     n.breaks = 10,
+                     expand = expansion(mult = c(0, 0.1))) +
+  scale_x_discrete(labels = c("0" = "Restricted",
+                              "1" = "Least Suitable",
+                              "2" = "Less Suitable",
+                              "3" = "Moderately Suitable",
+                              "4" = "Suitable",
+                              "5" = "Very Suitable")) +
+  scale_fill_manual(values = c("1" = "#FFFFCC",      
+                               "2" = "#FECC5C",     
+                               "3" = "#FD8D3C",     
+                               "4" = "#F03B20",      
+                               "5" = "#BD0026")) +
+  labs(title = "Total Land Area by Suitability Class in Northern BC",
+       x = "Suitability Class",
+       y = "Area") +
+  theme_minimal() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        legend.position = "none",
+        plot.title = element_text(face = "bold"))
+```
+
+### Step 3: Regional District breakdown
+
+```{r}
+# Regional district breakdown
+
+# Read in regional districts data 
+nbc_rd <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/NorthernBC_RegionalDistricts.shp")
+
+# Project to 3005
+nbc_rd <- sf::st_transform(nbc_rd, crs = 3005)
+
+# Count of suitability per Reg Dis using a for loop to overcome memory issues
+
+# Define classes of interest
+suit_classes <- 0:5
+
+# Ensure reg dis is a spatvect with match crs
+nbc_rd_v <- vect(nbc_rd)
+nbc_rd_v <- project(nbc_rd_v, crs(nbc_suit))
+
+# Create empty list to store results 
+nbc_zonalStats <- list()
+
+# Initiate loop 
+for (i in 1:nrow(nbc_rd_v)) {
+  message(paste("Processing district:", i, "of", nrow(nbc_rd_v)))
+  
+  single_dis <- nbc_rd_v[i, ]
+  
+  # Crop and mask to the individual district
+  nbc_suitability_crop <- crop(nbc_suit, single_dis)
+  nbc_suitability_mask <- mask(nbc_suitability_crop, single_dis)
+  rm(nbc_suitability_crop)
+  
+  # Extract all values from the cropped district directly 
+  vals <- values(nbc_suitability_mask, mat = FALSE, na.rm = TRUE)
+  
+  # Count the frequencies of your target classes
+  counts_vec <- sapply(suit_classes, function(cls) sum(vals == cls))
+  
+  rm(nbc_suitability_mask)
+  gc()
+  
+  nbc_zonalStats[[i]] <- tibble(
+    district_id   = i,
+    district_name = nbc_rd_v$AA_NAME[i],  
+    class         = suit_classes,
+    cell_count    = as.numeric(counts_vec)
+  )
+}
+
+pixel_area_km2 <- prod(res(nbc_suit)) / 1e6
+
+nbc_zonalstats_df <- bind_rows(nbc_zonalStats) %>%
+  # Clean names using case_when
+  mutate(
+    district_name = case_when(
+      str_detect(district_name, regex("bulkley-nechako", ignore_case = TRUE)) ~ "Bulkley-Nechaco",
+      str_detect(district_name, regex("cariboo", ignore_case = TRUE)) ~ "Cariboo",
+      str_detect(district_name, regex("Fraser-Fort George", ignore_case = TRUE)) ~ "Fraser-Fort George",
+      str_detect(district_name, regex("Kitimat-Stikine", ignore_case = TRUE)) ~ "Kitimat-Stikine",
+      str_detect(district_name, regex("Peace River", ignore_case = TRUE)) ~ "Peace River",
+      str_detect(district_name, regex("Central Coast", ignore_case = TRUE)) ~ "Central Coast",
+      str_detect(district_name, regex("Stikine", ignore_case = TRUE)) ~ "Stikine",
+      str_detect(district_name, regex("North Coast", ignore_case = TRUE)) ~ "North Coast",
+      str_detect(district_name, regex("Northern Rockies", ignore_case = TRUE)) ~ "Northern Rockies")) %>%
+  group_by(district_id, district_name) %>%
+  mutate(
+    total_cells = sum(cell_count, na.rm = TRUE),
+    proportion = if_else(total_cells > 0, cell_count / total_cells, 0),
+    class = factor(class, levels = suit_classes, labels = paste("Class", suit_classes)),
+    area_km2 = round(cell_count * pixel_area_km2, 2)) 
+
+# Reorder districts by Class 4 + Class 5 area
+nbc_class_order <- nbc_zonalstats_df %>%
+  filter(class %in% c("Class 4", "Class 5")) %>%
+  group_by(district_name) %>%
+  summarize(total = sum(area_km2, na.rm = TRUE)) %>%
+  arrange(total) %>%
+  pull(district_name)
+
+nbc_zonalstats_df$district_name <- factor(nbc_zonalstats_df$district_name, levels = nbc_class_order)
+```
+
+Visualize results
+
+```{r}
+# Visualize
+class_colors <- c(
+  "Class 0" = "#696969",
+  "Class 1" = "#FFFFCC",      
+  "Class 2" = "#FECC5C",     
+  "Class 3" = "#FD8D3C",     
+  "Class 4" = "#F03B20",      
+  "Class 5" = "#BD0026") 
+
+# Visualize breakdown using raw area (not peudo log scale) 
+# Accurate depiction but hard to infer anything because total area between each 
+ggplot(nbc_zonalstats_df, aes(fill = class, y = area_km2, x = district_name)) +
+  geom_bar(position = "stack", stat = "identity") +
+  ggtitle("Suitability by Regional District") +
+  scale_fill_manual(
+    values = class_colors, 
+    name = "Suitability Class",
+    labels = c("Class 0" = "Restricted",
+               "Class 1" = "Least Suitable",
+               "Class 2" = "Less Suitable",
+               "Class 3" = "Moderately Suitable",
+               "Class 4" = "Suitable",
+               "Class 5" = "Very Suitable")) +
+  labs(x = "Regional District", 
+       y = expression("Area (km"^2*")"), 
+       fill = "Suitability Class") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        legend.position = "right",
+        plot.title = element_text(face = "bold"))
+```
+
+Crop energy yield results to northern BC boundary
+
+```{r}
+class4_energy_nbc <- st_intersection(class4_energy, nbc_rd)
+class5_energy_nbc <- st_intersection(class5_energy, nbc_rd)
+
+# Aggregate for summary 
+
+# Total Capacity: convert kW to GigaWatts (GW) 
+total_cap_4_nbc <- sum(class4_energy_nbc$Ci, na.rm = TRUE) / 1000000
+total_cap_5_nbc <- sum(class5_energy_nbc$Ci, na.rm = TRUE) / 1000000
+
+# Total Annual Energy: convert kWh to Terawatt-hours (TWh/year)
+total_eng_4_nbc <- sum(class4_energy_nbc$Ei, na.rm = TRUE) / 1000000000
+total_eng_5_nbc <- sum(class5_energy_nbc$Ei, na.rm = TRUE) / 1000000000
+
+# Print final utility reports 
+cat("--- CLASS 4 RESULTS ---\n",
+    "Total Capacity:", round(total_cap_4_nbc, 2), "GW \n",
+    "Annual Yield  :", round(total_eng_4_nbc, 2), "TWh/year \n\n")
+
+cat("--- CLASS 5 RESULTS ---\n",
+    "Total Capacity:", round(total_cap_5_nbc, 2), "GW \n",
+    "Annual Yield  :", round(total_eng_5_nbc, 2), "TWh/year \n")
+```
+
+Determine energy yield per regional district
+
+```{r}
+# Join top two suitability classes into one
+top_energy_nbc <- rbind(class4_energy_nbc, class5_energy_nbc)
+
+# Intersect regional district layer with energy 
+energy_rd_nbc <- sf::st_join(top_energy_nbc, bc, largest = TRUE)
+
+# Clean table to provide summary stats
+# Want to know total capacity and energy per RD within class 4 + class 5
+RegDis_energy_nbc <- energy_rd_nbc %>%
+  group_by(AA_NAME) %>%
+  summarise(total_capacity_GW = sum(Ci)/1000000,
+            total_energy_TWh = sum(Ei)/1000000000) %>%
+  rename(Reg_Dis = AA_NAME) %>%
+  arrange(total_energy_TWh)
+
+# Drop geometry to export
+RegDis_energy_nbc_df <- sf::st_drop_geometry(RegDis_energy_nbc) 
+
+write_csv(RegDis_energy_nbc_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/RegDis_energy_summary_nbc.csv")
+st_write(top_energy_nbc, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy_nbc.shp")
+```
+
+Visualize results
+
+```{r}
+RegDis_energy_nbc_df_all <- RegDis_energy_nbc_df %>%
+  add_row(Reg_Dis = "Central Coast", total_capacity_GW = 0, total_energy_TWh = 0) %>%
+  add_row(Reg_Dis = "Stikine", total_capacity_GW = 0, total_energy_TWh = 0) %>%
+  mutate(
+    Reg_Dis = case_when(
+      str_detect(Reg_Dis, regex("bulkley-nechako", ignore_case = TRUE)) ~ "Bulkley-Nechaco",
+      str_detect(Reg_Dis, regex("cariboo", ignore_case = TRUE)) ~ "Cariboo",
+      str_detect(Reg_Dis, regex("Fraser-Fort George", ignore_case = TRUE)) ~ "Fraser-Fort George",
+      str_detect(Reg_Dis, regex("Kitimat-Stikine", ignore_case = TRUE)) ~ "Kitimat-Stikine",
+      str_detect(Reg_Dis, regex("Peace River", ignore_case = TRUE)) ~ "Peace River",
+      str_detect(Reg_Dis, regex("Central Coast", ignore_case = TRUE)) ~ "Central Coast",
+      str_detect(Reg_Dis, regex("Stikine", ignore_case = TRUE)) ~ "Stikine",
+      str_detect(Reg_Dis, regex("North Coast", ignore_case = TRUE)) ~ "North Coast",
+      str_detect(Reg_Dis, regex("Northern Rockies", ignore_case = TRUE)) ~ "Northern Rockies"))
+
+scale_factor <- 1 
+
+ggplot(RegDis_energy_nbc_df_all, aes(x = reorder(Reg_Dis, total_energy_TWh))) +  
+  ggtitle("Estimated Resource Yield by Regional District") +
+  
+  # Capacity bars (Primary Y-axis, left side)
+  geom_col(aes(y = total_capacity_GW, fill = "Capacity (GW)"), 
+           position = position_nudge(x = -0.15), width = 0.3) +
+  
+  # Energy bars (Secondary Y-axis, right side - unscaled, 1:1 match)
+  geom_col(aes(y = total_energy_TWh * scale_factor, fill = "Energy (TWh)"),
+           position = position_nudge(x = 0.15), width = 0.3) +  
+  
+  # Setup primary and secondary axes sharing the same clean scale
+  scale_y_continuous(
+    name = "Installable Capacity (GW)",
+    sec.axis = sec_axis(~ . * scale_factor, name = "Annual Energy (TWh)")) +
+  
+  # Labels and Theme
+  labs(x = "Regional District",
+       fill = NULL) +  
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "bottom") + 
+  coord_flip()
+```
+

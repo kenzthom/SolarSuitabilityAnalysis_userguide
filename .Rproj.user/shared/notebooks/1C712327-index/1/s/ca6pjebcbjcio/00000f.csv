@@ -1,0 +1,4 @@
+"0","#| echo: false"
+"0","#| fig-cap: Constraints summary "
+"0","cons_df <- read.csv(""/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints_summary.csv"")"
+"0","cons_df"

@@ -1,0 +1,4 @@
+"0","#| echo: false"
+"0","#| fig-cap: ""Constraint 4: Prime Agricultural Land"""
+"0","cons_cols <- c(""#696969"", ""#35CC35"")"
+"0","plot(rast(""/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif""), col=cons_cols)"

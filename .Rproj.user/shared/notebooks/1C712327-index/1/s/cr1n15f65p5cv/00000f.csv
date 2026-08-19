@@ -1,0 +1,3 @@
+"0","#| echo: false"
+"0","#| fig-cap: ""Raw Suitability Gradient"""
+"0","plot(rast(""/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif""))"

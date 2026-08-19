@@ -1,0 +1,4 @@
+"0","#| echo: false"
+"0","#| fig-cap: ""Land Constraints Mask"""
+"0","cons_cols <- c(""#696969"", ""#35CC35"")"
+"0","plot(rast(""/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif""), col=cons_cols)"

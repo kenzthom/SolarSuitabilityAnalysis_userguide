@@ -1,0 +1,4 @@
+"0","rd_Zstats_df <- rd_Zstats_df %>% "
+"0","  mutate(district_name = str_remove(district_name, ""Regional District of"")) %>%"
+"0","  mutate(district_name = str_remove(district_name, ""Regional District"")) %>%"
+"0","  mutate(district_name = str_remove(district_name, ""\\(Unincorporated\\)""))"

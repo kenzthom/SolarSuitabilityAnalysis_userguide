@@ -1,0 +1,43 @@
+<div style="padding: 20px; border-top: 1px solid #627583; background-color: #5b89aad2; color: white;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 20px;">
+
+    <div style="flex: 1;">
+      <img src="images/ACET_logo.png"
+           alt="ACET Initiative"
+           style="height: 60px; margin-bottom: 10px;">
+
+      <p style="margin: 0; font-size: 0.95rem;">
+        This research was undertaken thanks in part to funding from the
+        Canada First Research Excellence Fund, as part of the University of
+        Victoria-led Accelerating Community Energy Transformation (ACET) Initiative.
+      </p>
+    </div>
+
+    <div style="text-align: right; white-space: nowrap;">
+      <a href="https://www.uvic.ca/acet/projects/index.php"
+         target="_blank"
+         style="color: white; text-decoration: underline; display: block; margin-bottom: 8px;">
+        ACET Projects
+      </a>
+
+      <a href="https://github.com/kenzthom/SolarModel_Dash/blob/main/data/executive_summary.pdf"
+         target="_blank"
+         style="color: white; text-decoration: underline; display: block; margin-bottom: 8px;">
+        Executive Summary
+      </a>
+
+      <a href="https://kenzthom.github.io/SolarModel_Dash/"
+         target="_blank"
+         style="color: white; text-decoration: underline; display: block;">
+        Dashboard
+      </a>
+    </div>
+
+  </div>
+
+  <div style="text-align: center; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px; font-size: 0.9rem;">
+    Created by Mackenzie Thomson
+  </div>
+
+</div>

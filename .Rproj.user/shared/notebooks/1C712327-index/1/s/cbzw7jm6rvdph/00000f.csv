@@ -1,0 +1,8 @@
+"0","#| echo: false"
+"0","#| fig-cap: ""Classified Suitability"""
+"0","suitability_cols <- c(""1"" = ""#FFFFCC"", "
+"0","                      ""2"" = ""#FECC5C"","
+"0","                      ""3"" = ""#FD8D3C"","
+"0","                      ""4"" = ""#F03B20"","
+"0","                      ""5"" = ""#BD0026"")"
+"0","plot(rast(""/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif""), col = suitability_cols)"

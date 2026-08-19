@@ -1,0 +1,17 @@
+project:
+  type: website
+  output-dir: .
+
+website:
+  title: "SolarModel_UserGuide"
+
+format:
+  html:
+    toc: true
+    toc-location: left
+    toc-depth: 4
+    toc-expand: 3
+    theme: minty
+    code-fold: false
+    embed-resources: false
+    include-after-body: footer.html

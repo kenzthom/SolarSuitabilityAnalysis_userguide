@@ -1,0 +1,5 @@
+"0","decision_matrix <- tn_sites %>%"
+"0","  st_drop_geometry() %>%"
+"0","  select(site_id, gti_mean, slope_mean, aspect_mean, cities_mean, "
+"0","         roads_mean, subs_mean, energy_TWh) %>%"
+"0","  as.data.frame()"

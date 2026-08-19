@@ -1,0 +1,5 @@
+"0","pvout_mask <- rast(""/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/pvout_clean.tif"")
+"
+"2","Error in rast(""/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/pvout_clean.tif"") : 
+  could not find function ""rast""
+"
