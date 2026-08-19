@@ -1,7 +1,13 @@
+# R specific
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 .positai
+.DS_Store
 
+# Quarto / HTML output and cache junk
 /.quarto/
+/_site/
+*_files/
+*_cache/
