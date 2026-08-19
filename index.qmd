@@ -15,11 +15,13 @@ title-block-banner-color: white
 
 As electricity demand grows across British Columbia, more renewable energy installations need to be developed to support a resilient, diversified, low-carbon future. In light of this challenge, a site suitability analysis was undergone to create a province-wide screening tool that determines the most optimal locations for solar PV development.
 
-This analysis is broken down into 2 main sections:
+This analysis is broken down into 3 main sections:
 
-**Stage 1** determines the geographical potential of BC - the total land area where solar farm development is possible.
+**Stage 1:** Determine the geographical potential of BC - the total land area where solar farm development is possible.
 
-**Stage 2** determines the technical potential of BC - the total energy these sites could produce on a yearly basis.
+**Stage 2:** Determine the technical potential of BC - the total energy these sites could produce on a yearly basis.
+
+**Stage 3:** Rank suitable sites within top regional district using TOPSIS. 
 
 By providing clear and accessible information on renewable energy potential, this project helps accelerate clean energy development, informs decision-making and supports BC's transformation to a more resilient and sustainable electricity system.
 
@@ -38,8 +40,8 @@ This document provides a detailed guide of the analysis, including all code used
 First, each package must be installed and loaded to complete this analysis
 
 ```{r}
-#| output: false
 #| message: false
+#| eval: false
 
 # Load packages
 library(terra)
@@ -54,6 +56,7 @@ library(classInt)
 library(bcmaps)
 library(stringr)
 library(readxl)
+library(topsis)
 ```
 
 I recommend setting up an organized file system, similar to the one below, to save your intermediate outputs and final results.
@@ -80,7 +83,7 @@ Solar_Suitability/
 
 ### 1.1 Create Template
 
-To first step of the analysis is the creation of a template raster. This layer will ensure that every input layer is the exact same extent and resolution. We will do create this by rasterizing a polygon representing BCs administrative boundary.
+To first step of the analysis is the creation of a template raster. Using this layer in all subsequent processing will ensure that every derived surface conforms to the exact same extent and resolution. The template is created by rasterizing a polygon representing BCs administrative boundary.
 
 ```{r}
 #| message: false
@@ -620,6 +623,38 @@ suitability_cols <- c("#FFFFCC", "#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif"), col=suitability_cols)
 ```
 
+```{r}
+#| echo: false
+#| fig-cap: "Criteria comparison before and after reclassification"
+
+# Open a PNG device with dimensions suitable for a report (e.g., width = 10 inches, height = 14 inches)
+png("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/images/results/criteria_comparison.png", 
+    width = 10, height = 14, units = "in", res = 300)
+
+# Set margins and layout (mar: bottom, left, top, right)
+par(mfrow = c(6, 2), mar = c(2, 2, 2, 2))
+
+# Plot pairs (Cleaned on left, Reclassified on right)
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/cleaned/bc_aspect_cleaned.tif"), main="Aspect", axes=FALSE)
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif"), main="Aspect - Reclassified", axes=FALSE, col=suitability_cols)
+
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/cleaned/bc_slope_cleaned.tif"), main="Slope", axes=FALSE)
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif"), main="Slope - Reclassified", axes=FALSE, col=suitability_cols)
+
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/cleaned/cities_cleaned.tif"), main="Proximity to Cities", axes=FALSE)
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif"), main="Proximity to Cities - Reclassified", axes=FALSE, col=suitability_cols)
+
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/cleaned/gti_cleaned.tif"), main="GTI", axes=FALSE)
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif"), main="GTI - Reclassified", axes=FALSE, col=suitability_cols)
+
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/cleaned/roads_cleaned.tif"), main="Proximity to Roads", axes=FALSE)
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif"), main="Proximity to Roads - Reclassified", axes=FALSE, col=suitability_cols)
+
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/cleaned/subs_cleaned.tif"), main="Proximity to Substations", axes=FALSE)
+plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif"), main="Proximity to Substations - Reclassified", axes=FALSE, col=suitability_cols)
+
+```
+
 ### 1.3 Land Constraints Processing
 
 This portion of the analysis creates the land constraints spatial mask used to eliminate land from the suitability analysis that is restricted from solar farm development due to technical, environmental, or regulatory factors.
@@ -914,7 +949,7 @@ plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_
 
 #### 1.3.5 Protected and Conserved Areas
 
-Data source: [Canadian Protected and Conserved Areas Database](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html) 
+Data source: [Canadian Protected and Conserved Areas Database](https://www.canada.ca/en/environment-climate-change/services/national-wildlife-areas/protected-conserved-areas-database.html)
 
 Clean and rasterize data as usual, with the additional step of adding a 1km ecological buffer around Protected and Conserved Areas (PCA) polygons before rasterizing. 
 
@@ -965,7 +1000,7 @@ WAITING ON DATA
 
 Now that all data representing restriction zones are in binary raster format, we will easily combine them together into one master constraint mask to use on our final suitability surface. 
 
-Logic: If all cells across all layers equals 0, cell in final mask will equal 0. If even one cell across all layers equal 1, cell in final mask will equal 1. 
+Logic: If all cells across all layers equals 1, cell in final mask will equal 1. If even one cell across all layers equal 0, cell in final mask will equal 0. 
 
 We can use simple multiplication to accomplish this.
 
@@ -1029,6 +1064,7 @@ AHP is used to assign weights to each input criteria layer. A variety of experts
 2. Isolate and pull the Pairwise Comparison Matrix (PCM)
 3. Aggregate them using the geometric mean method 
 4. Construct a master PCM
+5. Generate final weights 
 
 ```{r}
 #| message: false
@@ -1106,12 +1142,15 @@ weights_percent <- weights_norm * 100
 ahp_weights <- cbind(criteria, weights_norm, weights_percent)
 colnames(ahp_weights) <- c("Criteria", "Decimal", "Percent")
 
+ahp_weights
+
 # Save
 write.csv(ahp_weights, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/ahp/ahp_weights.csv")
 ```
 
 ```{r}
 #| echo: false
+#| title: AHP-Derived Criteria Weights 
 ahp_weights <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/ahp/ahp_weights.csv")
 ggplot(ahp_weights, aes(x = reorder(Criteria, Percent), y = Percent)) +
   geom_col(fill = "#A663E0") +
@@ -1193,19 +1232,19 @@ writeRaster(final_suitability, "/Users/kenziethomson/Library/CloudStorage/OneDri
 
 ```{r}
 #| echo: false
-#| fig-cap: "Classified Suitability"
+#| fig-cap: "Classified Suitability Using Equal Interval Bins"
 suitability_cols <- c("#FFFFCC","#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif"), col = suitability_cols)
 ```
 
 ```{r}
 #| echo: false
-#| fig-cap: "Final Suitability"
+#| fig-cap: "Final Suitability With Land Constraints Mask"
 suitability_cols <- c("#696969","#FFFFCC","#FECC5C","#FD8D3C","#F03B20","#BD0026")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif"), col = suitability_cols)
 ```
 
-## Step 4: Geographical Potential Results 
+## Stage 1 Results 
 
 ```{r}
 #| message: false
@@ -1214,7 +1253,7 @@ plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_
 
 # This chunk will not appear on the html page
 
-# Quick Read
+# Quick read binary
 constraints <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/mask/constraints.tif")
 lcr_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/lcr_binary.tif")
 roads_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/roads_binary.tif")
@@ -1222,15 +1261,18 @@ rails_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/
 canopy_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/canopy_binary.tif")
 alr_soils_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/alr_soils_binary.tif")
 pca_binary <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif")
-classified_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif")
-final_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif")
-# Load in cleaned, reclassified criteria layers if they aren't still saved in the Environment 
+
+# Quick read reclassified 
 gti_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/gti_reclassified.tif")
 slope_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/slope_reclassified.tif")
 aspect_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/aspect_reclassified.tif")
 cities_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/cities_reclassified.tif")
 roads_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/roads_reclassified.tif")
 subs_reclassified <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/criteria/reclassified/subs_reclassified.tif")
+
+# Quick read suitability
+classified_suitability <-rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/classified_suitability.tif")
+final_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/final_suitability.tif")
 raw_suitability <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/raw_suitability.tif")
 ```
 
@@ -1261,14 +1303,13 @@ write.csv(suitability_summary, "/Users/kenziethomson/Library/CloudStorage/OneDri
 #| echo: false
 #| fig-cap: Areal breakdown of BC's total land base by suitability class
 
-rd_Zstats_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_regDis.csv")
-
 suitability_summary <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_summary.csv")
 
 # Visualize
-ggplot(suitability_summary, aes(x = class, y = area_km2, fill = as.character(class))) + 
+ggplot(suitability_summary, aes(x = factor(class), y = area_km2, fill = as.character(class))) + 
   geom_col() +
-  geom_text(aes(label = round(percent_of_total, 3), vjust = -0.5)) +
+  geom_text(aes(label = paste0(round(percent_of_total, 1), "%")), 
+            vjust = -0.5, size = 3) +
   scale_y_continuous(labels = scales::label_number(accuracy = 1, big.mark = ",")) +
   scale_fill_manual(
     values = c("0" = "#696969",
@@ -1285,21 +1326,23 @@ ggplot(suitability_summary, aes(x = class, y = area_km2, fill = as.character(cla
                "Suitable",
                "Very Suitable")) +
   labs(title = "Total Land Area by Suitability Class",
-       subtitle = "Percent of Total Area Labeled",
        x = "Suitability Class",
        y = expression("Area (km"^2*")")) +
   theme_minimal() +
   theme(panel.grid.major.x = element_blank(),
-        legend.position = "right")
+        legend.position = "right",
+        plot.title = element_text(face = "bold")) +
+  theme(text = element_text(family = "Times"))
 ```
 
 Key result 2: Amount of each suitability class within each regional district:
 
 ```{r}
+#| message: false
 #| eval: false
 
 # Read in regional districts data 
-rd <- sf::st_read("~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/BC_RegionalDistricts.shp")
+rd <- sf::st_read("~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/RegionalDistrict_Final.shp")
 
 # Project to 3005
 rd <- sf::st_transform(rd, crs = 3005)
@@ -1336,7 +1379,7 @@ for (i in 1:nrow(rd_v)) {
   
   zonalStats[[i]] <- tibble(
     district_id   = i,
-    district_name = rd_v$NAME_2[i],  
+    district_name = rd_v$AA_NAME[i],  
     class         = suit_classes,
     cell_count    = as.numeric(counts_vec)
   )
@@ -1371,7 +1414,21 @@ class_order <- rd_Zstats_df %>%
 rd_Zstats_df <- rd_Zstats_df %>%
   mutate(district_name = factor(as.character(district_name), levels = class_order))
 
+rd_stats_top <- rd_Zstats_df %>%
+  filter(class %in% c("Class 4", "Class 5")) %>%
+  group_by(district_name) %>%
+  summarize(total_high_suit_area = sum(Area_km2))
+
 write.csv(rd_Zstats_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_regDis.csv", row.names = FALSE)
+```
+
+Fix naming scheme so that each district in district_name does not say 'regional district' at the end
+
+```{r}
+rd_Zstats_df <- rd_Zstats_df %>% 
+  mutate(district_name = str_remove(district_name, "Regional District of")) %>%
+  mutate(district_name = str_remove(district_name, "Regional District")) %>%
+  mutate(district_name = str_remove(district_name, "\\(Unincorporated\\)"))
 ```
 
 ```{r}
@@ -1388,7 +1445,7 @@ class_colors <- c(
   "Class 4" = "#F03B20",      
   "Class 5" = "#BD0026") 
 
-ggplot(rd_Zstats_df, aes(fill = class, y = Area_km2, x = district_name)) +
+ggplot(rd_Zstats_df, aes(x = district_name, y = Area_km2, , fill = class)) +
   geom_bar(position = "stack", stat = "identity") +
   ggtitle("Suitability Class by Regional District (log scale)") +
   scale_fill_manual(
@@ -1408,33 +1465,44 @@ ggplot(rd_Zstats_df, aes(fill = class, y = Area_km2, x = district_name)) +
        y = expression("Area (km"^2*", log scale)"), 
        fill = "Suitability Class") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(face = "bold"))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(face = "bold")) + 
+  theme(text = element_text(family = "Times"))
 ```
 
 ```{r}
 #| echo: false
-#| fig-cap: Suitability within BC's Regional District, ranked in ascending order by amount of Class 4 and Class 5 land. No log scale is used.
+#| fig-cap: Suitability within BC's Regional District, ranked in ascending order by amount of Class 4 and Class 5 land. Log scale not necessary because we are only showing the top two classes.
 
 rd_Zstats_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/suitability_surfaces/summary_tables/suitability_regDis.csv")
 
+class_colors <- c(
+  "Class 1" = "#FFFFCC",      
+  "Class 2" = "#FECC5C",     
+  "Class 3" = "#FD8D3C",     
+  "Class 4" = "#F03B20",      
+  "Class 5" = "#BD0026") 
+
 # Visualize breakdown using raw area (not peudo log scale) 
 # Accurate depiction but hard to infer anything because total area between each RD varies so much 
-ggplot(rd_Zstats_df, aes(fill = class, y = Area_km2, x = district_name)) +
-  geom_bar(position = "stack", stat = "identity") +
-  ggtitle("Suitability Class by Regional District") +
-  scale_fill_manual(
-    values = class_colors, 
-    name = "Suitability Class",
-    labels = c("1" = "Class 1 - Least Suitable",
-               "2" = "Class 2 - Less Suitable",
-               "3" = "Class 3 - Moderately Suitable",
-               "4" = "Class 4 - Suitable",
-               "5" = "Class 5 - Very Suitable")) +
-  labs(x = "Regional District", 
-       y = expression("Area (km"^2*")"), 
-       fill = "Suitability Class") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(face = "bold"))
+
+rd_Zstats_df %>%
+  filter(class %in% c("Class 4", "Class 5")) %>%
+  ggplot(aes(x = reorder(district_name, Area_km2), y = Area_km2, fill = class)) +
+    geom_bar(position = "stack", stat = "identity") +
+    ggtitle("Top Suitability Across Regional Districts") +
+    scale_fill_manual(
+      values = class_colors, 
+      name = "Suitability Class",
+      labels = c("Class 4" = "Suitable",
+                 "Class 5" = "Most Suitable")) +
+    labs(x = "Regional District", 
+         y = expression("Area (km"^2*")"), 
+         fill = "Suitability Class") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+          plot.title = element_text(face = "bold"),
+          panel.grid.major.x = element_blank()) +
+  theme(text = element_text(family = "Times"))
 ```
 
 # Stage 2: Technical Potential
@@ -1445,7 +1513,7 @@ Calculating the technical potential of the most suitable areas provides insight 
 
 ## Step 1: Prepare Data
 
-First, clean PVOUT raster and isolate class 4 and 5 pixels from our final suitability raster - this way we are only deriving energy yield estimates from our most optimal land
+First, clean PVOUT raster and isolate class 4 and 5 pixels from our final suitability raster - this way we are only deriving energy yield estimates from our most optimal land.
 
 ```{r}
 #| message: false
@@ -1461,13 +1529,14 @@ bc_pvout_boundary <- sf::st_transform(bc, target_crs)
 pvout_crop <- crop(pvout, bc_pvout_boundary) 
 
 # Now that the layer is cropped to BC (rather than all of Canada), we can reproject it and mask it to our template
-# Method = near - use nearest neighbor as method to preserve integer classification of original layer 
+# Method = bilinear - use nearest neighbor as method to preserve integer classification of original layer 
 pvout_proj <- project(pvout_crop, template, method = "bilinear")
 
 # Mask to BC administrative boundary
 pvout_mask <- mask(pvout_proj, template) 
 
-writeRaster(pvout_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/pvout_clean.tif")
+writeRaster(pvout_mask, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/pvout_clean.tif",overwrite = TRUE)
+pvout_mask <- rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/pvout_clean.tif")
 ```
 
 ```{r}
@@ -1484,7 +1553,7 @@ class5[final_suitability != 5] <- NA
 writeRaster(class5, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/class5.tif")
 ```
 
-Now, use a GIS GUI (ArcGIS Pro, QGIS) to transform each raster into a polygon layer - terra:as.polygons() never runs, thats why a seperate software is necessary. Once done, we will filter out sites smaller than 5 acres (minimum size threshold for a 1 MW installation)
+Now, use a GIS GUI (ArcGIS Pro, QGIS) to transform each raster into a polygon layer - terra:as.polygons() never runs, thats why a separate software is necessary. Once done, we will filter out sites smaller than 5 acres (minimum size threshold for a 1 MW installation)
 
 ```{r}
 #| message: false
@@ -1494,24 +1563,27 @@ Now, use a GIS GUI (ArcGIS Pro, QGIS) to transform each raster into a polygon la
 class4_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/class4_polygons.shp")
 class5_poly <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/class5_polygons.shp")
 
-# Filter out areas smaller than 5 acre footprint 
 # Class 4
 class4_poly$Area_m2 <- as.numeric(sf::st_area(class4_poly))
 class4_poly$Area_acres <- class4_poly$Area_m2 / 4046.85642 
 class4_poly$Area_km2 <- class4_poly$Area_m2 / 1e6
+# Filter out areas smaller than 5 acre footprint 
 class4_mmu <- class4_poly[class4_poly$Area_acres > 5, ]
 
 # Total area of all class 4 sites:
 cat("The total area of suitable sites in class 4 is:", sum(class4_mmu$Area_km2), "km2")
+cat("The total number of sites in class 4 are:", nrow(class4_mmu))
 
 # Class 5
 class5_poly$Area_m2 <- as.numeric(sf::st_area(class5_poly))
 class5_poly$Area_acres <- class5_poly$Area_m2 / 4046.85642 
 class5_poly$Area_km2 <- class5_poly$Area_m2 / 1e6
+# Filter out areas smaller than 5 acre footprint 
 class5_mmu <- class5_poly[class5_poly$Area_acres > 5, ]
 
 # Total area of all class 5 sites:
 cat("The total area of suitable sites in class 5 is:", sum(class5_mmu$Area_km2), "km2")
+cat("The total number of sites in class 5 are:", nrow(class5_mmu))
 ```
 
 ## Step 2: Assign Ground Cover Ratio 
@@ -1592,7 +1664,7 @@ class4_energy <- process_solar_sites(class4_mmu, pvout_mask)
 class5_energy <- process_solar_sites(class5_mmu, pvout_mask)
 ```
 
-## Step 4: Technical Potential Results
+## Stage 2 Results
 
 ```{r}
 #| message: false
@@ -1624,39 +1696,55 @@ Determine energy yield per regional district
 #| message: false
 #| eval: false 
 
+reg_dis_new <- sf::st_read("~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/RegionalDistrict_Final.shp")
+
 # Join top two suitability classes into one
 top_energy <- rbind(class4_energy, class5_energy)
 
 # Intersect regional district layer with energy 
-energy_rd <- sf::st_join(top_energy, bc, largest = TRUE)
+energy_rd <- sf::st_join(top_energy, reg_dis_new, largest = TRUE)
 
 # Clean table to provide summary stats
 # Want to know total capacity and energy per RD within each class
 RegDis_energy <- energy_rd %>%
-  group_by(NAME_2) %>%
+  filter(!is.na(AA_NAME)) %>%  # Drop the NA slivers
+  group_by(AA_NAME) %>%
   summarise(total_capacity_GW = sum(Ci)/1000000,
-            total_energy_TWh = sum(Ei)/1000000000) %>%
-  rename(Reg_Dis = NAME_2) %>%
+            total_energy_TWh = sum(Ei)/1000000000,
+            suitable_area_km2 = sum(Area_km2)) %>%
+  rename(Reg_Dis = AA_NAME) %>%
   arrange(total_energy_TWh)
 
 # Drop geometry to export
+# Resulting df only has 27 rows because 2 regional districts (Stikine & Central Coast) do not contain any class 4 or class 5 land, therefor there are not included in 'top energy' 
 RegDis_energy_df <- sf::st_drop_geometry(RegDis_energy) 
 
 write_csv(RegDis_energy_df, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/RegDis_energy_summary.csv")
+st_write(top_energy, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy.shp", append = FALSE)
+
+top_energy <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy.shp")
+RegDis_energy_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/RegDis_energy_summary.csv")
 ```
 
 ```{r}
 #| echo: false
 #| fig-cap: Energy yield results per Regional District
+
 RegDis_energy_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/RegDis_energy_summary.csv")
 
-RegDis_energy_df
+RegDis_energy_df <- RegDis_energy_df %>% 
+  mutate(
+    Reg_Dis = Reg_Dis %>% 
+      str_remove("Regional District of") %>% 
+      str_remove("Regional District") %>% 
+      str_remove("\\(Unincorporated\\)") %>% 
+      str_trim())
 
-# Calculate the scaling factor
+# Calculate the scaling factor to have double y axis
 scale_factor <- max(RegDis_energy_df$total_capacity_GW, na.rm = TRUE) / max(RegDis_energy_df$total_energy_TWh, na.rm = TRUE)
 
 ggplot(RegDis_energy_df, aes(x = reorder(Reg_Dis, total_energy_TWh))) + 
-  ggtitle("Estimated Resource Yield by Regional District") +
+  ggtitle("Resource Yield by Regional District") +
   
   # Capacity bars (Primary Y-axis)
   geom_col(aes(y = total_capacity_GW, fill = "Capacity (GW)"), 
@@ -1677,6 +1765,237 @@ ggplot(RegDis_energy_df, aes(x = reorder(Reg_Dis, total_energy_TWh))) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.title = element_text(face = "bold"),
-        legend.position = "bottom")
+        legend.position = "bottom",
+        panel.grid.major.x = element_blank()) +
+  theme(text = element_text(family = "Times"))
 ```
+
+Or, create a factored tier schema. This is cool because the range is so large that its hard to accurately show the full range in both capacity and energy in a double bar chart.
+
+```{r}
+#| echo: false
+#| fig-cap: Tiered energy yield results per Regional District
+
+RegDis_energy_df <- read.csv("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/RegDis_energy_summary.csv")
+
+RegDis_energy_df <- RegDis_energy_df %>%
+  mutate(
+    tier = case_when(
+      total_energy_TWh >= 10 ~ "High (>10 TWh)",
+      total_energy_TWh >= 2 ~ "Medium (2-10 TWh)",
+      TRUE ~ "Low (<2 TWh)"),
+    tier = factor(tier, levels = c("High (>10 TWh)", "Medium (2-10 TWh)", "Low (<2 TWh)")))
+
+ggplot(RegDis_energy_df, aes(x = reorder(Reg_Dis, total_energy_TWh), y = total_energy_TWh)) +
+  geom_col(aes(fill = total_capacity_GW)) +
+  facet_wrap(~tier, scales = "free_x") +
+  scale_fill_gradient(name = "Capacity (GW)", low = "#FFFFCC",high = "#BD0026") +
+  coord_flip() +
+  labs(title = "Annual Energy Yield by Regional District",
+       x = "Regional District",
+       y = "Annual Energy (TWh)") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"),
+        text = element_text(family = "Times"),
+          panel.grid.major.x = element_blank(),
+        panel.spacing = unit(1, "lines"))
+```
+
+# Stage 3: TOPSIS in Thompson-Nicola
+
+The TOPSIS method, which orders suitable sites from best to worst, is based on the concept that the chosen alternative must have the shortest geometric distance from the positive ideal solution and the farthest geometric distance from the negative-ideal solution. It was first developed by Yoon and Hwang in 1981. The TOPSIS method assumes each criterion has a monotonically increasing or decreasing preference which makes it easier to identify the best-ideal and worst-ideal solutions. Consequently, the preference order is generated through a comparison of their geometric distances, usually their Euclidean distances. 
+
+We will order sites within the Thompson Nicola regional district - the district with the greatest amount of suitable land and energy yield - to determine the best sites within the province for development 
+
+###Step 1: Filter data to TN RD
+
+```{r}
+#| message: false
+#| eval: false 
+
+# Read in class 4 and 5 polygons (filtering for sites smaller than 5 acres done already)
+top_energy <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy.shp") 
+
+# Isolate thompson nicola rd
+tn_rd <- sf::st_read("~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/RegionalDistricts_Updated.shp") %>%
+  filter(Alias == "Thompson-Nicola") %>%
+  st_transform(3005)
+
+# Filter energy polygons to Thompson-Nicola
+tn_sites <- st_intersection(tn_rd, top_energy)
+
+cat("Total sites in thompson nicola:", nrow(tn_sites))
+```
+
+### Step 2: Extract criteria values per polygon 
+
+```{r}
+#| message: false
+#| eval: false 
+
+# Extract the mean value of each reclassified (1-5) input criteria PER polygon 
+tn_sites <- tn_sites %>%
+  mutate(
+    gti_mean = exact_extract(gti_reclassified, ., fun = "mean"),
+    slope_mean = exact_extract(slope_reclassified, ., fun = "mean"),
+    aspect_mean = exact_extract(aspect_reclassified, ., fun = "mean"),
+    cities_mean = exact_extract(cities_reclassified, ., fun = "mean"),
+    roads_mean = exact_extract(roads_reclassified, ., fun = "mean"),
+    subs_mean = exact_extract(subs_reclassified, ., fun = "mean"))
+
+# Change capacity and energy values from kW and kWh to MW and and TWh
+tn_sites <- tn_sites %>%
+  mutate(
+    capacity_MW = Ci / 1000,
+    energy_TWh = Ei / 1000000000,
+    site_id = row_number())
+```
+
+### Step 3: Build TOPSIS decision matrix
+
+Extract from the thompson nicola sites data layer the 7 input criteria (6 suitability criteria + annual energy generation)
+
+```{r}
+#| message: false
+#| eval: false 
+
+decision_matrix <- tn_sites %>%
+  st_drop_geometry() %>%
+  select(site_id, gti_mean, slope_mean, aspect_mean, cities_mean, 
+         roads_mean, subs_mean, energy_TWh) %>%
+  as.data.frame()
+```
+
+### Step 4: Define AHP weights
+
+These are the original weights from the AHP analysis:
+
+gti = 0.262
+ground slope = 0.092
+ground aspect = 0.085
+proximity to cities= 0.112
+proximity to roads = 0.144
+proximity to subs = 0.302
+
+But we want to add annual energy generation as a criteria used to rank the sites, so we must reallocate the weights while preserving the relative importance determined by experts. 
+
+We will assign annual energy yield (which inherently accounts for area, capacity, and PVout) a weight of 20%.
+
+```{r}
+#| message: false
+#| eval: false 
+
+# Reallocate to include Energy Yield (20%)
+scale_factor <- 0.80  # Preserve relative importance of AHP weights
+energy_weight <- 0.20
+
+ahp_weights_original <- c(
+  gti = 0.26275243,
+  slope = 0.09270032,
+  aspect = 0.08552311,
+  cities = 0.11224992,
+  roads = 0.14434327,
+  subs = 0.30243095)
+
+ahp_weights_base <- ahp_weights_original * scale_factor
+
+weights_base <- c(
+  gti_mean = ahp_weights_base["gti"],
+  slope_mean = ahp_weights_base["slope"],
+  aspect_mean = ahp_weights_base["aspect"],
+  cities_mean = ahp_weights_base["cities"],
+  roads_mean = ahp_weights_base["roads"],
+  subs_mean = ahp_weights_base["subs"],
+  energy_TWh = energy_weight)
+
+# View new weights 
+weights_base
+```
+
+###Step 5: Implement TOPSIS
+
+We will use the topsis() function from the topsis package. This is easier to implement than TOPSIS() from the MCDA package because it internally calculates the Positive Ideal Siutation (PIS), Negative Ideal Siutaion (NIS) and the normalized decision matrix. 
+
+```{r}
+#| message: false
+#| eval: false 
+
+# Pull everything from decision matrix minus the site id, this creates the performance table used to rank sites
+dm <- decision_matrix %>%
+  select(-site_id) %>%
+  as.matrix()
+
+# Run TOPSIS directly
+topsis_scores <- topsis(dm, 
+                        weights = weights_base,
+                        # All criteria have a + impact because they have been classified on a 1-5 scale where 5 is better so higher is better in all cases
+                        impacts = rep("+", ncol(dm)))
+
+# Extract the scores dataframe from topsis()
+topsis_results <- tibble(
+  site_id = decision_matrix$site_id,
+  topsis_score = topsis_scores$score,
+  rank = topsis_scores$rank) %>%
+  left_join(tn_sites %>% 
+              select(site_id, Area_km2, capacity_MW, energy_TWh),
+            by = "site_id") %>%
+  arrange(rank)
+
+# View top 5
+(head(topsis_results, 5))
+
+# Join TOPSIS results to the sf object for plotting
+tn_sites_ranked <- tn_sites %>%
+  left_join(topsis_results %>% 
+              select(site_id, topsis_score, rank),
+    by = "site_id")
+
+# Filter to top 5
+top_5_sites <- tn_sites_ranked %>%
+  filter(rank <= 5) %>%
+  arrange(rank)
+
+# Map them
+ggplot(tn_sites_ranked) +
+  geom_sf(aes(fill = rank)) +
+  geom_sf(data = top_5_sites, fill = "red") +
+  labs(title = "Thompson-Nicola TOPSIS Ranking",
+       fill = "Rank") +
+  theme_minimal()
+
+# Save TOPSIS results
+sf::st_write(tn_sites_ranked, "/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/topsis/thompson_nicola_topsis_rankings.shp", append = FALSE)
+```
+
+### Step 6: Sensitivity Analysis
+
+We need to run a sensitivity analysis to see if the order of top sites change when the weight of annual energy changes. After running this test we can conclude that the ranking is robust and that the weight distribution does not cause rank reversal. Regardless of the weight used for annual energy, the top 5 rankings remain the same. 
+
+```{r}
+#| message: false
+#| eval: false 
+
+# Create a tibble to store results
+sensitivity_results <- tibble()
+
+# ew = energy weight 
+for (ew in c(0.10, 0.15, 0.20, 0.25)) {
+  # Adjust original weight while preserving relative importance, assign energy a new weight 
+  weights_test <- c(ahp_weights_original * (1 - ew), energy_TWh = ew)
+  topsis_test <- topsis(dm,
+                        weights = weights_test,
+                        impacts = rep("+", ncol(dm)))
+  
+  top_5_test <- topsis_test %>%
+    slice_min(rank, n = 5) %>%
+    mutate(energy_weight = ew)
+  
+  sensitivity_results <- bind_rows(sensitivity_results, top_5_test)
+}
+
+print(sensitivity_results)
+```
+
+
+
 
