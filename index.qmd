@@ -1,7 +1,7 @@
 ---
 title: "Solar PV Suitability Analysis: User Guide"
-date: 2026-08-19
-author: Kenzie Thomson
+date: 2026-08-28
+author: Kenzie Thomson 
 title-block-banner: images/solarfarm.jpg
 title-block-banner-color: white
 ---
@@ -26,7 +26,6 @@ This document provides a detailed guide of the analysis, including all code used
 
 [Click for first-draft publication](https://borealisdata.ca/dataset.xhtml?persistentId=doi:10.5683/SP3/MZYJFF)
 
-[Click for raw data download - coming soon](tbd)
 
 **NOTE:** You will need to change each file path to a folder on your computer!
 
@@ -969,10 +968,6 @@ cons_cols <- c("#696969", "#35CC35")
 plot(rast("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/constraints/reclassified/pca_binary.tif"), col=cons_cols)
 ```
 
-#### 1.3.6 Archaeologically and Culturally Sensitive Areas
-
-WAITING ON DATA
-
 ### 1.4 Land Constraints Mask 
 
 Now that all data representing restriction zones are in binary raster format, we will easily combine them together into one master constraint mask to use on our final suitability surface. 
@@ -1911,7 +1906,7 @@ scen_100mw_outside <- outside_muni %>%
   filter(Area_acres > 500)
 ```
 
-## Step 2: Create custom function to calculate solar resource potential  
+## Step 2: Create Custom Solar Resource Function
 
 We will assign each polygon a specific Ground Cover Ratio (GCR) value based on the part of the province it falls within. 
 
