@@ -158,7 +158,7 @@ background-size: cover;
   <li><a href="#stage-2-results" id="toc-stage-2-results" class="nav-link" data-scroll-target="#stage-2-results">Stage 2 Results</a></li>
   <li><a href="#stage-3-topsis-in-thompson-nicola" id="toc-stage-3-topsis-in-thompson-nicola" class="nav-link" data-scroll-target="#stage-3-topsis-in-thompson-nicola">Stage 3: TOPSIS in Thompson-Nicola</a>
   <ul class="collapse">
-  <li><a href="#step-1-filter-data-to-tn-rd" id="toc-step-1-filter-data-to-tn-rd" class="nav-link" data-scroll-target="#step-1-filter-data-to-tn-rd">Step 1: Filter data to TN RD</a></li>
+  <li><a href="#step-1-filter-data-to-tnrd" id="toc-step-1-filter-data-to-tnrd" class="nav-link" data-scroll-target="#step-1-filter-data-to-tnrd">Step 1: Filter data to TNRD</a></li>
   <li><a href="#step-2-extract-criteria" id="toc-step-2-extract-criteria" class="nav-link" data-scroll-target="#step-2-extract-criteria">Step 2: Extract Criteria</a></li>
   <li><a href="#step-3-build-decision-matrix" id="toc-step-3-build-decision-matrix" class="nav-link" data-scroll-target="#step-3-build-decision-matrix">Step 3: Build Decision Matrix</a></li>
   <li><a href="#step-4-define-weights" id="toc-step-4-define-weights" class="nav-link" data-scroll-target="#step-4-define-weights">Step 4: Define Weights</a></li>
@@ -1846,34 +1846,39 @@ background-size: cover;
 <span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a processing function for any scenario layer</span></span>
 <span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>process_solar_scenario <span class="ot">&lt;-</span> <span class="cf">function</span>(sf_layer, pvout_mask) {</span>
 <span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  sf_layer <span class="sc">%&gt;%</span></span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. Add centroid latitude</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add centroid latitude</span></span>
 <span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">latitude =</span> <span class="fu">st_coordinates</span>(<span class="fu">st_transform</span>(<span class="fu">st_centroid</span>(geometry), <span class="dv">4326</span>))[, <span class="st">"Y"</span>]) <span class="sc">%&gt;%</span></span>
 <span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. Assign latitudinal zone</span></span>
 <span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
 <span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">lat_zone =</span> <span class="fu">case_when</span>(</span>
 <span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>        latitude <span class="sc">&lt;</span> <span class="fl">52.122</span>  <span class="sc">~</span> <span class="st">"South"</span>,</span>
 <span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>        latitude <span class="sc">&lt;</span> <span class="fl">55.884</span>  <span class="sc">~</span> <span class="st">"Central"</span>, </span>
-<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span>               <span class="sc">~</span> <span class="st">"North"</span>)</span>
-<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Dynamically assign GCR</span></span>
-<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">GCR =</span> gcr_lookup[lat_zone]) <span class="sc">%&gt;%</span></span>
-<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Calculate Installable Capacity (Ci)</span></span>
-<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ci_kW =</span> Area_m2 <span class="sc">*</span> <span class="fl">0.23</span> <span class="sc">*</span> <span class="fl">0.724</span> <span class="sc">*</span> GCR) <span class="sc">%&gt;%</span></span>
-<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 5. Extract zonal mean pvout</span></span>
-<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pvout_mean =</span> <span class="fu">exact_extract</span>(pvout_mask, ., <span class="at">fun =</span> <span class="st">"mean"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 6. Calculate Annual Energy Production (Ei)</span></span>
-<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ei_kWh =</span> Ci_kW <span class="sc">*</span> pvout_mean)</span>
-<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the function across all three scenarios in one go</span></span>
-<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a>scen_1mw_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_scenario</span>(scen_1mw, pvout_mask)</span>
-<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>scen_2mw_muni_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_scenario</span>(scen_2mw_muni, pvout_mask)</span>
-<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a>scen_100mw_outside_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_scenario</span>(scen_100mw_outside, pvout_mask)</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span>               <span class="sc">~</span> <span class="st">"North"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Dynamically assign GCR</span></span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">GCR =</span> gcr_lookup[lat_zone]) <span class="sc">%&gt;%</span></span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate capacity (kW)</span></span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ci_kW =</span> Area_m2 <span class="sc">*</span> <span class="fl">0.23</span> <span class="sc">*</span> <span class="fl">0.724</span> <span class="sc">*</span> GCR) <span class="sc">%&gt;%</span></span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate capacity (GW)</span></span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cap_GW =</span> Ci_kW <span class="sc">/</span> <span class="fl">1e6</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate capacity (MW)</span></span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cap_MW =</span> Ci_kW <span class="sc">/</span> <span class="dv">1000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract zonal mean pvout</span></span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pvout_mean =</span> <span class="fu">exact_extract</span>(pvout_mask, ., <span class="at">fun =</span> <span class="st">"mean"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate annual energy  (kWh)</span></span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Ei_kWh =</span> Ci_kW <span class="sc">*</span> pvout_mean)<span class="sc">%&gt;%</span></span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate annual energy (TWh)</span></span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">energy_TWh =</span> Ei_kWh <span class="sc">/</span> <span class="fl">1e9</span>)</span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Save results </span></span>
-<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_write</span>(scen_1mw_energy,<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy.shp"</span>, <span class="at">append =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb39-36"><a href="#cb39-36" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_write</span>(scen_2mw_muni_energy,<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy_above2MW_insideMuni.shp"</span>, <span class="at">append =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb39-37"><a href="#cb39-37" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_write</span>(scen_100mw_outside_energy,<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy_above100MW_outsideMuni.shp"</span>, <span class="at">append =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the function across all three scenarios in one go</span></span>
+<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a>scen_1mw_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_scenario</span>(scen_1mw, pvout_mask)</span>
+<span id="cb39-36"><a href="#cb39-36" aria-hidden="true" tabindex="-1"></a>scen_2mw_muni_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_scenario</span>(scen_2mw_muni, pvout_mask)</span>
+<span id="cb39-37"><a href="#cb39-37" aria-hidden="true" tabindex="-1"></a>scen_100mw_outside_energy <span class="ot">&lt;-</span> <span class="fu">process_solar_scenario</span>(scen_100mw_outside, pvout_mask)</span>
+<span id="cb39-38"><a href="#cb39-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-39"><a href="#cb39-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Save results </span></span>
+<span id="cb39-40"><a href="#cb39-40" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_write</span>(scen_1mw_energy,<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy.shp"</span>, <span class="at">append =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb39-41"><a href="#cb39-41" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_write</span>(scen_2mw_muni_energy,<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy_above2MW_insideMuni.shp"</span>, <span class="at">append =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb39-42"><a href="#cb39-42" aria-hidden="true" tabindex="-1"></a>sf<span class="sc">::</span><span class="fu">st_write</span>(scen_100mw_outside_energy,<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy_above100MW_outsideMuni.shp"</span>, <span class="at">append =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -1979,14 +1984,14 @@ background-size: cover;
 <h1>Stage 3: TOPSIS in Thompson-Nicola</h1>
 <p>The TOPSIS method, which orders suitable sites from best to worst, is based on the concept that the chosen alternative must have the shortest geometric distance from the positive ideal solution and the farthest geometric distance from the negative-ideal solution. It was first developed by Yoon and Hwang in 1981. The TOPSIS method assumes each criterion has a monotonically increasing or decreasing preference which makes it easier to identify the best-ideal and worst-ideal solutions. Consequently, the preference order is generated through a comparison of their geometric distances, usually their Euclidean distances.</p>
 <p>We will order sites within the Thompson Nicola regional district - the district with the greatest amount of suitable land and energy yield - to determine the best sites within the province for development</p>
-<section id="step-1-filter-data-to-tn-rd" class="level3">
-<h3 class="anchored" data-anchor-id="step-1-filter-data-to-tn-rd">Step 1: Filter data to TN RD</h3>
+<section id="step-1-filter-data-to-tnrd" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-filter-data-to-tnrd">Step 1: Filter data to TNRD</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in class 4 and 5 polygons (filtering for sites smaller than 5 acres done already)</span></span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>top_energy <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy.shp"</span>) </span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Isolate thompson nicola rd</span></span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>tn_rd <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/RegionalDistrict_Final.shp"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>tn_rd <span class="ot">&lt;-</span> sf<span class="sc">::</span><span class="fu">st_read</span>(<span class="st">"~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/admin boundaries/RegionalDistrict_Final.shp"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(AA_NAME <span class="sc">==</span> <span class="st">"Thompson-Nicola Regional District"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="dv">3005</span>)</span>
 <span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a></span>
@@ -2007,14 +2012,8 @@ background-size: cover;
 <span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">aspect_mean =</span> <span class="fu">exact_extract</span>(aspect_reclassified, ., <span class="at">fun =</span> <span class="st">"mean"</span>),</span>
 <span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">cities_mean =</span> <span class="fu">exact_extract</span>(cities_reclassified, ., <span class="at">fun =</span> <span class="st">"mean"</span>),</span>
 <span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">roads_mean =</span> <span class="fu">exact_extract</span>(roads_reclassified, ., <span class="at">fun =</span> <span class="st">"mean"</span>),</span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">subs_mean =</span> <span class="fu">exact_extract</span>(subs_reclassified, ., <span class="at">fun =</span> <span class="st">"mean"</span>))</span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Change capacity and energy values from kW and kWh to MW and and TWh</span></span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>tn_sites <span class="ot">&lt;-</span> tn_sites <span class="sc">%&gt;%</span></span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">capacity_MW =</span> Ci <span class="sc">/</span> <span class="dv">1000</span>,</span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">energy_TWh =</span> Ei <span class="sc">/</span> <span class="dv">1000000000</span>,</span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">site_id =</span> <span class="fu">row_number</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">subs_mean =</span> <span class="fu">exact_extract</span>(subs_reclassified, ., <span class="at">fun =</span> <span class="st">"mean"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">site_id =</span> <span class="fu">row_number</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-3-build-decision-matrix" class="level3">
@@ -2081,7 +2080,7 @@ background-size: cover;
 <span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">topsis_score =</span> topsis_scores<span class="sc">$</span>score,</span>
 <span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">rank =</span> topsis_scores<span class="sc">$</span>rank) <span class="sc">%&gt;%</span></span>
 <span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(tn_sites <span class="sc">%&gt;%</span> </span>
-<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(site_id, Area_km2, capacity_MW, energy_TWh),</span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>              <span class="fu">select</span>(site_id, Area_km2, cap_GW, energy_TWh),</span>
 <span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="st">"site_id"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(rank)</span>
 <span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a></span>
