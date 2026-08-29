@@ -1938,23 +1938,28 @@ gcr_lookup <- c(
 # Create a processing function for any scenario layer
 process_solar_scenario <- function(sf_layer, pvout_mask) {
   sf_layer %>%
-    # 1. Add centroid latitude
+    # Add centroid latitude
     mutate(latitude = st_coordinates(st_transform(st_centroid(geometry), 4326))[, "Y"]) %>%
     # 2. Assign latitudinal zone
     mutate(
       lat_zone = case_when(
         latitude < 52.122  ~ "South",
         latitude < 55.884  ~ "Central", 
-        TRUE               ~ "North")
-    ) %>%
-    # 3. Dynamically assign GCR
+        TRUE               ~ "North")) %>%
+    # Dynamically assign GCR
     mutate(GCR = gcr_lookup[lat_zone]) %>%
-    # 4. Calculate Installable Capacity (Ci)
+    # Calculate capacity (kW)
     mutate(Ci_kW = Area_m2 * 0.23 * 0.724 * GCR) %>%
-    # 5. Extract zonal mean pvout
+    # Calculate capacity (GW)
+    mutate(cap_GW = Ci_kW / 1e6) %>%
+    # Calculate capacity (MW)
+    mutate(cap_MW = Ci_kW / 1000) %>%
+    # Extract zonal mean pvout
     mutate(pvout_mean = exact_extract(pvout_mask, ., fun = "mean")) %>%
-    # 6. Calculate Annual Energy Production (Ei)
-    mutate(Ei_kWh = Ci_kW * pvout_mean)
+    # Calculate annual energy  (kWh)
+    mutate(Ei_kWh = Ci_kW * pvout_mean)%>%
+    # Calculate annual energy (TWh)
+    mutate(energy_TWh = Ei_kWh / 1e9)
 }
 
 # Run the function across all three scenarios in one go
@@ -2139,7 +2144,7 @@ The TOPSIS method, which orders suitable sites from best to worst, is based on t
 
 We will order sites within the Thompson Nicola regional district - the district with the greatest amount of suitable land and energy yield - to determine the best sites within the province for development 
 
-### Step 1: Filter data to TN RD
+### Step 1: Filter data to TNRD
 
 ```{r}
 #| message: false
@@ -2149,7 +2154,7 @@ We will order sites within the Thompson Nicola regional district - the district 
 top_energy <- sf::st_read("/Users/kenziethomson/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/energy/top_energy.shp") 
 
 # Isolate thompson nicola rd
-tn_rd <- sf::st_read("~/Library/CloudStorage/OneDrive-UBC/RA/Data/Admin Boundaries/RegionalDistrict_Final.shp") %>%
+tn_rd <- sf::st_read("~/Library/CloudStorage/OneDrive-UBC/RA/SolarModel_Guide/data/admin boundaries/RegionalDistrict_Final.shp") %>%
   filter(AA_NAME == "Thompson-Nicola Regional District") %>%
   st_transform(3005)
 
@@ -2173,14 +2178,8 @@ tn_sites <- tn_sites %>%
     aspect_mean = exact_extract(aspect_reclassified, ., fun = "mean"),
     cities_mean = exact_extract(cities_reclassified, ., fun = "mean"),
     roads_mean = exact_extract(roads_reclassified, ., fun = "mean"),
-    subs_mean = exact_extract(subs_reclassified, ., fun = "mean"))
-
-# Change capacity and energy values from kW and kWh to MW and and TWh
-tn_sites <- tn_sites %>%
-  mutate(
-    capacity_MW = Ci / 1000,
-    energy_TWh = Ei / 1000000000,
-    site_id = row_number())
+    subs_mean = exact_extract(subs_reclassified, ., fun = "mean")) %>%
+  mutate(site_id = row_number())
 ```
 
 ### Step 3: Build Decision Matrix
@@ -2260,7 +2259,7 @@ topsis_results <- tibble(
   topsis_score = topsis_scores$score,
   rank = topsis_scores$rank) %>%
   left_join(tn_sites %>% 
-              select(site_id, Area_km2, capacity_MW, energy_TWh),
+              select(site_id, Area_km2, cap_GW, energy_TWh),
             by = "site_id") %>%
   arrange(rank)
 
